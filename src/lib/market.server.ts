@@ -70,6 +70,7 @@ export async function priceAt(symbol: string, at: Date): Promise<number | null> 
   const end = new Date(at.getTime() + 60 * 60 * 1000);
   const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(symbol)}&interval=5min&timezone=UTC&order=ASC&outputsize=1&start_date=${encodeURIComponent(fmt(at))}&end_date=${encodeURIComponent(fmt(end))}&apikey=${tdKey()}`;
   const j = (await (await fetch(url)).json()) as { values?: { close: string }[]; message?: string };
-  if (!j.values?.length) { console.error("Twelve Data series error", j.message); return null; }
-  return Number(j.values[0].close);
+  const first = j.values?.[0];
+  if (!first) { console.error("Twelve Data series error", j.message); return null; }
+  return Number(first.close);
 }
