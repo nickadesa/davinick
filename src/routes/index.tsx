@@ -93,6 +93,7 @@ function Index() {
         <section id="lab" className="mt-24 scroll-mt-24">
           <Heading k="03" title="What-if lab" sub="Drag a number and watch the signals react. Nothing is saved." />
           <div className="grid grid-cols-2 gap-5">
+            {labEvents.length === 0 && <p className="col-span-2 rounded-2xl border px-6 py-10 text-center text-sm text-muted-foreground">No upcoming red-news figures with a forecast to play with right now.</p>}
             {labEvents.map((e) => {
               const fc = e.forecast as number;
               const v = what[e.id] ?? e.actual ?? fc;
