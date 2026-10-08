@@ -90,8 +90,6 @@ export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: numbe
     },
   });
 
-  const object = await result.experimental_partialOutputStream
-    .pipeTo(new WritableStream({ write() {} }))
-    .then(() => result.output);
+  const object = await result.output;
   return { ...object, generatedAt: new Date().toISOString() };
 }
