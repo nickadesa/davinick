@@ -44,7 +44,7 @@ export interface Signal {
 export function computeSignal(events: NewsEvent[], asset: Asset): Signal {
   const released = events.filter((e) => e.actual !== null);
   const score = released.reduce((acc, e) => acc + surprise(e) * e.sensitivity[asset] * e.weight, 0);
-  const confidence = Math.round(Math.min(95, 50 + Math.abs(score) * 60));
+  const confidence = Math.round(Math.min(95, 50 + Math.abs(score) * 28));
   const action: Action = Math.abs(score) < 0.05 ? "NEUTRAL" : score > 0 ? "BUY" : "SELL";
   return { asset, action, confidence: action === "NEUTRAL" ? 50 : confidence, score, drivers: released.length };
 }
