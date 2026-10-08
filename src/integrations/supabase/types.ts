@@ -110,6 +110,48 @@ export type Database = {
         }
         Relationships: []
       }
+      trade_posts: {
+        Row: {
+          author_name: string
+          created_at: string
+          direction: string
+          entry_price: number
+          exit_price: number
+          id: string
+          lots: number
+          note: string
+          screenshot_path: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          author_name: string
+          created_at?: string
+          direction: string
+          entry_price: number
+          exit_price: number
+          id?: string
+          lots?: number
+          note?: string
+          screenshot_path?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          created_at?: string
+          direction?: string
+          entry_price?: number
+          exit_price?: number
+          id?: string
+          lots?: number
+          note?: string
+          screenshot_path?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -10,7 +10,7 @@ export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
       { title: "Signal history — Red Box" },
-      { name: "description", content: "Every XAUUSD and Nasdaq news signal, compared with the price 1 and 4 hours later." },
+      { name: "description", content: "Every XAUUSD news signal, compared with the price 1 and 4 hours later." },
       { property: "og:title", content: "Signal history — Red Box" },
       { property: "og:description", content: "How did the news-driven signals actually perform?" },
     ],
@@ -35,7 +35,7 @@ function HistoryPage() {
     p4: r.price_4h === null ? null : Number(r.price_4h),
   }));
 
-  const stats = (["XAUUSD", "NASDAQ"] as const).map((asset) => {
+  const stats = (["XAUUSD"] as const).map((asset) => {
     const scored = rows.filter((r) => r.asset === asset).map((r) => outcome(r.action as Action, r.entry, r.p4));
     const wins = scored.filter((o) => o === "win").length;
     const done = scored.filter((o) => o === "win" || o === "loss").length;
@@ -51,10 +51,10 @@ function HistoryPage() {
           <p className="mt-6 max-w-lg text-muted-foreground">Every signal is stored when a red-news figure comes out, then checked against the price 1 hour and 4 hours later. Wins are judged on the 4-hour move.</p>
         </section>
 
-        <div className="grid grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 gap-5">
           {stats.map((s) => (
             <div key={s.asset} className="rounded-3xl border bg-card p-8">
-              <p className="font-mono text-xs tracking-widest text-muted-foreground">{s.asset === "XAUUSD" ? "XAUUSD" : "NAS100"} · 4H HIT RATE</p>
+              <p className="font-mono text-xs tracking-widest text-muted-foreground">{s.asset} · 4H HIT RATE</p>
               <p className="mt-4 font-mono text-6xl">{s.rate === null ? "—" : `${s.rate}%`}</p>
               <p className="mt-2 text-sm text-muted-foreground">{s.wins} correct out of {s.done} scored signals</p>
             </div>
@@ -75,7 +75,7 @@ function HistoryPage() {
             return (
               <div key={r.id} className="grid grid-cols-[150px_90px_80px_1fr_110px_90px_90px_80px] items-center gap-4 border-b px-6 py-4 text-sm last:border-0">
                 <span className="font-mono text-muted-foreground">{d.toISOString().slice(5, 16).replace("T", " ")}</span>
-                <span className="font-mono">{r.asset === "XAUUSD" ? "XAUUSD" : "NAS100"}</span>
+                <span className="font-mono">{r.asset}</span>
                 <span className={`font-bold ${r.action === "BUY" ? "text-bull" : r.action === "SELL" ? "text-bear" : "text-muted-foreground"}`}>{r.action} <span className="font-mono text-xs font-normal text-muted-foreground">{r.confidence}%</span></span>
                 <span className="truncate">{r.trigger_title}</span>
                 <span className="font-mono">{r.entry?.toFixed(2) ?? "—"}</span>
@@ -86,7 +86,7 @@ function HistoryPage() {
             );
           })}
         </div>
-        <p className="mt-6 text-xs text-muted-foreground">Nasdaq is tracked through the QQQ fund, which follows the Nasdaq 100. Past results don't guarantee future performance. Not financial advice.</p>
+        <p className="mt-6 text-xs text-muted-foreground">Past results don't guarantee future performance. Not financial advice.</p>
       </main>
     </div>
   );
