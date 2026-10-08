@@ -18,7 +18,7 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Red-folder news in, confidence-scored bias out. XAUUSD & Nasdaq." },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(calendarQuery),
+  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(calendarQuery), context.queryClient.ensureQueryData(aiQuery)]),
   errorComponent: () => <div className="p-20 text-center text-muted-foreground">The calendar couldn't load. Try again shortly.</div>,
   notFoundComponent: () => <div className="p-20 text-center text-muted-foreground">Not found</div>,
   component: Index,
