@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { computeSignal, type Asset } from "./signals";
-import { currentPrice, loadCalendar, priceAt, PRICE_SYMBOLS, publicDb } from "./market.server";
+import { currentPrice, goldCandles, loadCalendar, priceAt, PRICE_SYMBOLS, publicDb } from "./market.server";
 import { runAiAnalysis, type AiAnalysis } from "./ai.server";
 
 export const getCalendar = createServerFn({ method: "GET" }).handler(async () => {
@@ -32,13 +32,13 @@ export const saveActual = createServerFn({ method: "POST" })
     });
     if (error) { console.error(error); return { ok: false, error: "Couldn't save" }; }
 
-    // Record the new signal for both assets, based on red news released in the last 24h.
+    // Record the new gold signal, based on red news released in the last 24h.
     const since = Date.now() - 24 * 3600 * 1000;
     const recent = events
       .map((e) => (e.id === ev.id ? { ...e, actual: data.actual } : e))
       .filter((e) => new Date(e.time).getTime() >= since && new Date(e.time) <= new Date());
     const rows = await Promise.all(
-      (["XAUUSD", "NASDAQ"] as Asset[]).map(async (asset) => {
+      (["XAUUSD"] as Asset[]).map(async (asset) => {
         const s = computeSignal(recent, asset);
         let entry: number | null = null;
         try { entry = await currentPrice(PRICE_SYMBOLS[asset]); } catch (e) { console.error(e); }
@@ -63,10 +63,8 @@ export const getAiAnalysis = createServerFn({ method: "GET" })
       }
       const events = await loadCalendar();
       let xauusd: number | null = null;
-      let qqq: number | null = null;
       try { xauusd = await currentPrice(PRICE_SYMBOLS.XAUUSD); } catch (e) { console.error(e); }
-      try { qqq = await currentPrice(PRICE_SYMBOLS.NASDAQ); } catch (e) { console.error(e); }
-      const analysis = await runAiAnalysis(events, { xauusd, qqq });
+      const analysis = await runAiAnalysis(events, { xauusd });
       await supabaseAdmin.from("ai_analysis").upsert({ id: 1, payload: analysis as never, created_at: new Date().toISOString() });
       return { analysis, error: null };
     } catch (e) {
@@ -81,6 +79,7 @@ export const getHistory = createServerFn({ method: "GET" }).handler(async () => 
   const { data, error } = await publicDb()
     .from("signal_history")
     .select("id, asset, action, confidence, trigger_title, created_at, entry_price, price_1h, price_4h")
+    .eq("asset", "XAUUSD")
     .order("created_at", { ascending: false })
     .limit(200);
   if (error) { console.error(error); return { rows: [], error: "Couldn't load history" }; }
@@ -114,3 +113,14 @@ export const getHistory = createServerFn({ method: "GET" }).handler(async () => 
   }
   return { rows, error: null as string | null };
 });
+
+export const getCandles = createServerFn({ method: "GET" })
+  .inputValidator((d) => z.object({ interval: z.enum(["15min", "1h", "4h"]) }).parse(d))
+  .handler(async ({ data }) => {
+    try {
+      return { candles: await goldCandles(data.interval), error: null as string | null };
+    } catch (e) {
+      console.error(e);
+      return { candles: [], error: "Gold prices aren't available right now." };
+    }
+  });

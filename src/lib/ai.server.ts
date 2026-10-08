@@ -20,16 +20,8 @@ function createRunIdFetch(initialRunId?: string) {
 }
 
 const analysisSchema = z.object({
-  outlook: z.string().describe("2-3 sentence weekly outlook for gold and Nasdaq based on this week's high-impact USD events"),
+  outlook: z.string().describe("2-3 sentence weekly outlook for gold based on this week's high-impact USD events"),
   xauusd: z.object({
-    action: z.enum(["BUY", "SELL", "NEUTRAL"]),
-    confidence: z.number().min(50).max(95),
-    reasoning: z.string().describe("1-2 sentences"),
-    entry: z.number().nullable(),
-    stopLoss: z.number().nullable(),
-    takeProfit: z.number().nullable(),
-  }),
-  nasdaq: z.object({
     action: z.enum(["BUY", "SELL", "NEUTRAL"]),
     confidence: z.number().min(50).max(95),
     reasoning: z.string().describe("1-2 sentences"),
@@ -48,8 +40,8 @@ const analysisSchema = z.object({
 
 export type AiAnalysis = z.infer<typeof analysisSchema> & { generatedAt: string };
 
-/** Ask the AI to analyse this week's red-folder USD events and produce signals for gold and Nasdaq. */
-export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: number | null; qqq: number | null }): Promise<AiAnalysis> {
+/** Ask the AI to analyse this week's red-folder USD events and produce signals for gold. */
+export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: number | null }): Promise<AiAnalysis> {
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
 
@@ -71,11 +63,11 @@ export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: numbe
   const result = streamText({
     model: provider.responses("openai/gpt-6-astra"),
     system:
-      "You are a macro trading analyst. Analyse high-impact US economic events and give directional signals for XAUUSD (gold) and the Nasdaq 100. Stronger-than-expected US data usually lifts the dollar and yields, pressuring gold and tech; weak data does the opposite. Confidence is 50-95, never 100. Suggest entry, stop loss and take profit levels near the current prices given, with roughly 1:2 risk-reward; use null when the action is NEUTRAL. Keep every text field short.",
+      "You are a macro trading analyst. Analyse high-impact US economic events and give directional signals for XAUUSD (gold). Stronger-than-expected US data usually lifts the dollar and yields, pressuring gold; weak data does the opposite. Confidence is 50-95, never 100. Suggest entry, stop loss and take profit levels near the current price given; where useful, place entries at the 61.8% or 78.6% Fibonacci retracement of the latest swing, with roughly 1:2 risk-reward; use null when the action is NEUTRAL. Keep every text field short.",
     messages: [
       {
         role: "user",
-        content: `This week's high-impact USD events:\n${eventLines || "(none)"}\n\nCurrent prices: XAUUSD ${prices.xauusd ?? "unknown"}, Nasdaq 100 proxy (QQQ) ${prices.qqq ?? "unknown"}. Give the analysis as JSON.`,
+        content: `This week's high-impact USD events:\n${eventLines || "(none)"}\n\nCurrent XAUUSD price: ${prices.xauusd ?? "unknown"}. Give the analysis as JSON.`,
       },
     ],
     output: Output.object({ schema: analysisSchema }),

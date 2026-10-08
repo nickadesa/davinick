@@ -1,4 +1,4 @@
-export type Asset = "XAUUSD" | "NASDAQ";
+export type Asset = "XAUUSD";
 export type Bias = "bullish" | "bearish" | "neutral";
 export type Action = "BUY" | "SELL" | "NEUTRAL";
 
@@ -28,7 +28,7 @@ export function parseFigure(raw: string | null | undefined): { value: number | n
   return { value: Number(m[0]), unit };
 }
 
-/** Typical USD-data reaction: stronger data → stronger USD & yields → pressure on gold and tech. */
+/** Typical USD-data reaction: stronger data → stronger USD & yields → pressure on gold. */
 export function classifyEvent(title: string): Pick<NewsEvent, "sensitivity" | "weight" | "note"> {
   const t = title.toLowerCase();
   const inverse = /unemployment rate|jobless|claims/.test(t);
@@ -39,11 +39,11 @@ export function classifyEvent(title: string): Pick<NewsEvent, "sensitivity" | "w
       : 1;
   const s = inverse ? 1 : -1;
   const note = inverse
-    ? "Higher reading = weaker labour market → softer USD and lower yields, usually supportive for gold and tech."
+    ? "Higher reading = weaker labour market → softer USD and lower yields, usually supportive for gold."
     : /cpi|pce|ppi|inflation|hourly/.test(t)
-      ? "Hotter inflation lifts rate-hike odds → stronger USD and yields, pressure on gold and tech."
-      : "Stronger-than-expected data tends to lift USD and yields, weighing on gold and Nasdaq.";
-  return { sensitivity: { XAUUSD: s, NASDAQ: s }, weight, note };
+      ? "Hotter inflation lifts rate-hike odds → stronger USD and yields, pressure on gold."
+      : "Stronger-than-expected data tends to lift USD and yields, weighing on gold.";
+  return { sensitivity: { XAUUSD: s }, weight, note };
 }
 
 /** Relative surprise: (actual - forecast) / |forecast|, clamped to ±1. */
@@ -85,4 +85,24 @@ export function outcome(action: Action, entry: number | null, later: number | nu
   if (entry === null || later === null) return "pending";
   if (later === entry) return "loss";
   return (later > entry) === (action === "BUY") ? "win" : "loss";
+}
+
+/** Fibonacci retracement levels for a swing. In an up-swing the levels sit below the high (buy zone), in a down-swing above the low (sell zone). */
+export function fibLevels(high: number, low: number, trend: "up" | "down") {
+  const range = high - low;
+  const at = (r: number) => (trend === "up" ? high - range * r : low + range * r);
+  return { f618: at(0.618), f786: at(0.786) };
+}
+
+/** XAUUSD: 1 standard lot = 100 oz, so a $1 move = $100 per lot. Returns lots rounded down to 0.01. */
+export function lotSize(balance: number, riskPct: number, stopDistance: number): number {
+  if (balance <= 0 || riskPct <= 0 || stopDistance <= 0) return 0;
+  const lots = (balance * (riskPct / 100)) / (stopDistance * 100);
+  return Math.floor(lots * 100 + 1e-9) / 100;
+}
+
+/** Profit in USD for a gold trade. */
+export function tradePnl(direction: "BUY" | "SELL", entry: number, exit: number, lots: number): number {
+  const move = direction === "BUY" ? exit - entry : entry - exit;
+  return Math.round(move * lots * 100 * 100) / 100;
 }

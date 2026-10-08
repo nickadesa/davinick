@@ -3,7 +3,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { classifyEvent, parseFigure, type NewsEvent } from "./signals";
 
 const FEED = "https://nfs.faireconomy.media/ff_calendar_thisweek.json";
-export const PRICE_SYMBOLS = { XAUUSD: "XAU/USD", NASDAQ: "QQQ" } as const;
+export const PRICE_SYMBOLS = { XAUUSD: "XAU/USD" } as const;
 
 interface FFEvent { title: string; country: string; date: string; impact: string; forecast: string; previous: string }
 
@@ -87,4 +87,14 @@ export async function priceAt(symbol: string, at: Date): Promise<number | null> 
   const first = j.values?.[0];
   if (!first) { console.error("Twelve Data series error", j.message); return null; }
   return Number(first.close);
+}
+
+export interface Candle { t: string; o: number; h: number; l: number; c: number }
+
+/** Recent gold candles, oldest first. */
+export async function goldCandles(interval: "15min" | "1h" | "4h", size = 120): Promise<Candle[]> {
+  const url = `https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=${interval}&timezone=UTC&outputsize=${size}&apikey=${tdKey()}`;
+  const j = (await (await fetch(url)).json()) as { values?: { datetime: string; open: string; high: string; low: string; close: string }[]; message?: string };
+  if (!j.values) throw new Error(`Twelve Data candles error: ${j.message}`);
+  return j.values.map((v) => ({ t: v.datetime, o: +v.open, h: +v.high, l: +v.low, c: +v.close })).reverse();
 }
