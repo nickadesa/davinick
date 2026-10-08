@@ -106,3 +106,5 @@ export function tradePnl(direction: "BUY" | "SELL", entry: number, exit: number,
   const move = direction === "BUY" ? exit - entry : entry - exit;
   return Math.round(move * lots * 100 * 100) / 100;
 }
+
+export interface Candle { t: string; o: number; h: number; l: number; c: number }

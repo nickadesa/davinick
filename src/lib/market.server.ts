@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { classifyEvent, parseFigure, type NewsEvent } from "./signals";
+import { classifyEvent, parseFigure, type Candle, type NewsEvent } from "./signals";
 
 const FEED = "https://nfs.faireconomy.media/ff_calendar_thisweek.json";
 export const PRICE_SYMBOLS = { XAUUSD: "XAU/USD" } as const;
@@ -89,7 +89,6 @@ export async function priceAt(symbol: string, at: Date): Promise<number | null> 
   return Number(first.close);
 }
 
-export interface Candle { t: string; o: number; h: number; l: number; c: number }
 
 /** Recent gold candles, oldest first. */
 export async function goldCandles(interval: "15min" | "1h" | "4h", size = 120): Promise<Candle[]> {
