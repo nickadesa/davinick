@@ -30,7 +30,7 @@ function useNow() {
 function Index() {
   const [what, setWhat] = useState<Record<string, number>>({});
   const events = useMemo(
-    () => newsEvents.map((e) => (e.id in what ? { ...e, actual: what[e.id] } : e)),
+    () => newsEvents.map((e): NewsEvent => (e.id in what ? { ...e, actual: what[e.id] ?? null } : e)),
     [what],
   );
   const gold = computeSignal(events, "XAUUSD");
