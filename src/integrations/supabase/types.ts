@@ -14,7 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      event_actuals: {
+        Row: {
+          actual: number
+          event_key: string
+          event_time: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual: number
+          event_key: string
+          event_time: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual?: number
+          event_key?: string
+          event_time?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      signal_history: {
+        Row: {
+          action: string
+          asset: string
+          confidence: number
+          created_at: string
+          entry_price: number | null
+          id: string
+          price_1h: number | null
+          price_4h: number | null
+          trigger_title: string
+        }
+        Insert: {
+          action: string
+          asset: string
+          confidence: number
+          created_at?: string
+          entry_price?: number | null
+          id?: string
+          price_1h?: number | null
+          price_4h?: number | null
+          trigger_title: string
+        }
+        Update: {
+          action?: string
+          asset?: string
+          confidence?: number
+          created_at?: string
+          entry_price?: number | null
+          id?: string
+          price_1h?: number | null
+          price_4h?: number | null
+          trigger_title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
