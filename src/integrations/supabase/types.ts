@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_analysis: {
+        Row: {
+          created_at: string
+          id: number
+          payload: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          payload: Json
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          payload?: Json
+        }
+        Relationships: []
+      }
       calendar_cache: {
         Row: {
           fetched_at: string
