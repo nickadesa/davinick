@@ -3,10 +3,11 @@ import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { computeSignal, eventBias, type Asset, type Bias, type NewsEvent, type Signal } from "@/lib/signals";
-import { getCalendar, saveActual } from "@/lib/market.functions";
+import { getAiAnalysis, getCalendar, saveActual } from "@/lib/market.functions";
 import { SiteNav } from "@/components/SiteNav";
 
 const calendarQuery = queryOptions({ queryKey: ["calendar"], queryFn: () => getCalendar(), staleTime: 60_000 });
+const aiQuery = queryOptions({ queryKey: ["ai-analysis"], queryFn: () => getAiAnalysis({ data: {} }), staleTime: 6 * 3600e3 });
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -78,6 +79,8 @@ function Index() {
           <SignalCard s={gold} name="Gold Spot / USD" />
           <SignalCard s={ndx} name="US Tech 100" />
         </section>
+
+        <AiSection />
 
         <section id="news" className="mt-24 scroll-mt-24">
           <Heading k="02" title="This week's red box" sub="USD high-impact events. Click a released event to see why it moves the market." />
