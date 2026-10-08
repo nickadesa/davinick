@@ -12,10 +12,10 @@ const aiQuery = queryOptions({ queryKey: ["ai-analysis"], queryFn: () => getAiAn
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Red Box — News-driven signals for Gold & Nasdaq" },
-      { name: "description", content: "High-impact economic news analysed into BUY/SELL bias with a confidence score for XAUUSD and Nasdaq." },
-      { property: "og:title", content: "Red Box — News-driven signals for Gold & Nasdaq" },
-      { property: "og:description", content: "Red-folder news in, confidence-scored bias out. XAUUSD & Nasdaq." },
+      { title: "Red Box — News-driven gold signals" },
+      { name: "description", content: "High-impact economic news analysed into BUY/SELL bias with a confidence score for XAUUSD." },
+      { property: "og:title", content: "Red Box — News-driven gold signals" },
+      { property: "og:description", content: "Red-folder news in, confidence-scored gold bias out." },
     ],
   }),
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(calendarQuery), context.queryClient.ensureQueryData(aiQuery)]),
@@ -51,7 +51,6 @@ function Index() {
     return events.filter((e) => e.id in what || (new Date(e.time).getTime() >= since && new Date(e.time) <= now));
   }, [events, now, what]);
   const gold = computeSignal(recent, "XAUUSD");
-  const ndx = computeSignal(recent, "NASDAQ");
   const [open, setOpen] = useState<string | null>(null);
   const labEvents = events.filter((e) => e.forecast !== null && (!now || new Date(e.time) >= new Date(now.getTime() - 24 * 3600e3))).slice(0, 4);
 
@@ -67,7 +66,7 @@ function Index() {
           <h1 className="animate-blur-in text-7xl font-bold leading-[0.95] tracking-[-0.04em]">
             Read the news.<br /><span className="text-muted-foreground">Not the noise.</span>
           </h1>
-          <p className="mt-6 font-mono text-xs uppercase tracking-[0.25em] text-muted-foreground">XAUUSD · NASDAQ 100 · RED FOLDER ONLY</p>
+          <p className="mt-6 font-mono text-xs uppercase tracking-[0.25em] text-muted-foreground">XAUUSD · GOLD SPOT · RED FOLDER ONLY</p>
           <p className="mt-8 max-w-lg text-lg text-muted-foreground animate-blur-in [animation-delay:200ms]">
             Every high-impact release is scored against forecast and turned into a directional bias —
             with an honest confidence, never a guarantee.
@@ -75,9 +74,8 @@ function Index() {
           <NextNews events={events} now={now} />
         </section>
 
-        <section id="signals" className="grid grid-cols-2 gap-5 scroll-mt-24">
+        <section id="signals" className="scroll-mt-24">
           <SignalCard s={gold} name="Gold Spot / USD" />
-          <SignalCard s={ndx} name="US Tech 100" />
         </section>
 
         <AiSection />
@@ -161,10 +159,7 @@ function AiSection() {
             <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Weekly outlook</p>
             <p className="mt-3 max-w-3xl text-lg leading-relaxed">{a.outlook}</p>
           </div>
-          <div className="grid grid-cols-2 gap-5">
-            <AiSignalCard label="XAUUSD" name="Gold Spot / USD" s={a.xauusd} />
-            <AiSignalCard label="NAS100" name="US Tech 100" s={a.nasdaq} />
-          </div>
+          <AiSignalCard label="XAUUSD" name="Gold Spot / USD" s={a.xauusd} />
           <div className="flex items-center justify-between">
             <p className="font-mono text-xs text-muted-foreground">
               Generated {new Date(a.generatedAt).toLocaleString("en-GB", { timeZone: "UTC" })} UTC
@@ -225,7 +220,7 @@ function SignalCard({ s, name }: { s: Signal; name: string }) {
     <div className="group rounded-3xl border bg-card p-8 transition-colors hover:border-gold/40">
       <div className="flex items-start justify-between">
         <div>
-          <p className="font-mono text-xs tracking-widest text-muted-foreground">{s.asset === "XAUUSD" ? "XAUUSD" : "NAS100"}</p>
+          <p className="font-mono text-xs tracking-widest text-muted-foreground">XAUUSD</p>
           <p className="mt-1 text-sm text-muted-foreground">{name}</p>
           <p key={s.action} className={`mt-8 animate-blur-in text-7xl font-bold tracking-[-0.04em] ${color}`}>{s.action}</p>
           <p className="mt-3 text-sm text-muted-foreground">
@@ -265,7 +260,7 @@ function NewsRow({ e, now, open, onToggle }: { e: NewsEvent; now: Date | null; o
   const released = now ? t <= now : false;
   return (
     <div className={released ? "" : "opacity-90"}>
-      <button onClick={onToggle} className="grid w-full grid-cols-[110px_1fr_150px_110px_110px] items-center gap-4 px-6 py-5 text-left transition-colors hover:bg-faint">
+      <button onClick={onToggle} className="grid w-full grid-cols-[110px_1fr_150px_140px] items-center gap-4 px-6 py-5 text-left transition-colors hover:bg-faint">
         <span className="font-mono text-sm text-muted-foreground">{day} {time}</span>
         <span className="flex items-center gap-3">
           <span className="size-2.5 rounded-sm bg-bear" />
@@ -281,7 +276,6 @@ function NewsRow({ e, now, open, onToggle }: { e: NewsEvent; now: Date | null; o
           )}
         </span>
         <span>Gold <BiasChip e={e} asset="XAUUSD" /></span>
-        <span>NDX <BiasChip e={e} asset="NASDAQ" /></span>
       </button>
       {open && (
         <div className="animate-blur-in space-y-4 px-6 pb-6 pl-[134px] text-sm text-muted-foreground">
