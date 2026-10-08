@@ -135,6 +135,73 @@ function Index() {
   );
 }
 
+function AiSection() {
+  const { data } = useSuspenseQuery(aiQuery);
+  const refresh = useServerFn(getAiAnalysis);
+  const qc = useQueryClient();
+  const [busy, setBusy] = useState(false);
+  const a = data.analysis;
+
+  async function regenerate() {
+    setBusy(true);
+    const r = await refresh({ data: { refresh: true } });
+    setBusy(false);
+    if (r.analysis) qc.setQueryData(["ai-analysis"], r);
+  }
+
+  return (
+    <section id="ai" className="mt-24 scroll-mt-24">
+      <Heading k="AI" title="AI desk analysis" sub="The model reads this week's red news and writes the call — bias, confidence, and levels." />
+      {data.error && <p className="mb-4 text-sm text-bear">{data.error}</p>}
+      {!a ? (
+        <p className="rounded-2xl border px-6 py-14 text-center text-sm text-muted-foreground">No AI analysis yet.</p>
+      ) : (
+        <div className="space-y-5">
+          <div className="rounded-2xl border bg-card p-8">
+            <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Weekly outlook</p>
+            <p className="mt-3 max-w-3xl text-lg leading-relaxed">{a.outlook}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-5">
+            <AiSignalCard label="XAUUSD" name="Gold Spot / USD" s={a.xauusd} />
+            <AiSignalCard label="NAS100" name="US Tech 100" s={a.nasdaq} />
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs text-muted-foreground">
+              Generated {new Date(a.generatedAt).toLocaleString("en-GB", { timeZone: "UTC" })} UTC
+            </p>
+            <button onClick={regenerate} disabled={busy}
+              className="rounded-lg border px-4 py-2 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground disabled:opacity-50">
+              {busy ? "Analysing…" : "↺ Re-analyse"}
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function AiSignalCard({ label, name, s }: { label: string; name: string; s: { action: "BUY" | "SELL" | "NEUTRAL"; confidence: number; reasoning: string; entry: number | null; stopLoss: number | null; takeProfit: number | null } }) {
+  const color = s.action === "BUY" ? "text-bull" : s.action === "SELL" ? "text-bear" : "text-muted-foreground";
+  return (
+    <div className="rounded-3xl border bg-card p-8 transition-colors hover:border-gold/40">
+      <p className="font-mono text-xs tracking-widest text-muted-foreground">{label}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{name}</p>
+      <div className="mt-6 flex items-baseline gap-4">
+        <p className={`text-5xl font-bold tracking-[-0.04em] ${color}`}>{s.action}</p>
+        <p className="font-mono text-xl text-muted-foreground">{s.confidence}%</p>
+      </div>
+      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{s.reasoning}</p>
+      {s.entry !== null && (
+        <div className="mt-6 grid grid-cols-3 gap-3 border-t pt-5 font-mono text-sm">
+          <div><p className="text-[10px] uppercase tracking-widest text-muted-foreground">Entry</p><p className="mt-1">{s.entry}</p></div>
+          <div><p className="text-[10px] uppercase tracking-widest text-muted-foreground">Stop loss</p><p className="mt-1 text-bear">{s.stopLoss}</p></div>
+          <div><p className="text-[10px] uppercase tracking-widest text-muted-foreground">Take profit</p><p className="mt-1 text-bull">{s.takeProfit}</p></div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function fmt(n: number) {
   return Math.abs(n) >= 10 ? n.toFixed(0) : n.toFixed(2).replace(/0$/, "");
 }
