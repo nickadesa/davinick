@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { computeSignal, type Asset } from "./signals";
 import { currentPrice, loadCalendar, priceAt, PRICE_SYMBOLS, publicDb } from "./market.server";
+import { runAiAnalysis, type AiAnalysis } from "./ai.server";
 
 export const getCalendar = createServerFn({ method: "GET" }).handler(async () => {
   try {
@@ -46,6 +47,34 @@ export const saveActual = createServerFn({ method: "POST" })
     );
     await supabaseAdmin.from("signal_history").insert(rows);
     return { ok: true, error: null as string | null };
+  });
+
+/** AI-generated analysis of this week's red news, cached for 6 hours. Pass refresh=true to regenerate. */
+export const getAiAnalysis = createServerFn({ method: "GET" })
+  .inputValidator((d) => z.object({ refresh: z.boolean().optional() }).parse(d ?? {}))
+  .handler(async ({ data }): Promise<{ analysis: AiAnalysis | null; error: string | null }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    try {
+      if (!data?.refresh) {
+        const { data: cached } = await supabaseAdmin.from("ai_analysis").select("payload, created_at").eq("id", 1).maybeSingle();
+        if (cached && Date.now() - new Date(cached.created_at).getTime() < 6 * 3600e3) {
+          return { analysis: cached.payload as unknown as AiAnalysis, error: null };
+        }
+      }
+      const events = await loadCalendar();
+      let xauusd: number | null = null;
+      let qqq: number | null = null;
+      try { xauusd = await currentPrice(PRICE_SYMBOLS.XAUUSD); } catch (e) { console.error(e); }
+      try { qqq = await currentPrice(PRICE_SYMBOLS.NASDAQ); } catch (e) { console.error(e); }
+      const analysis = await runAiAnalysis(events, { xauusd, qqq });
+      await supabaseAdmin.from("ai_analysis").upsert({ id: 1, payload: analysis as never, created_at: new Date().toISOString() });
+      return { analysis, error: null };
+    } catch (e) {
+      console.error(e);
+      const { data: cached } = await supabaseAdmin.from("ai_analysis").select("payload").eq("id", 1).maybeSingle();
+      if (cached) return { analysis: cached.payload as unknown as AiAnalysis, error: null };
+      return { analysis: null, error: "AI analysis isn't available right now. Try again in a moment." };
+    }
   });
 
 export const getHistory = createServerFn({ method: "GET" }).handler(async () => {
