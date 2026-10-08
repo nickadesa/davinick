@@ -1,7 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { computeSignal, eventBias, type Asset, type Bias, type NewsEvent, type Signal } from "@/lib/signals";
-import { newsEvents } from "@/lib/news-data";
+import { getCalendar, saveActual } from "@/lib/market.functions";
+import { SiteNav } from "@/components/SiteNav";
+
+const calendarQuery = queryOptions({ queryKey: ["calendar"], queryFn: () => getCalendar(), staleTime: 60_000 });
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -12,6 +17,9 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Red-folder news in, confidence-scored bias out. XAUUSD & Nasdaq." },
     ],
   }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(calendarQuery),
+  errorComponent: () => <div className="p-20 text-center text-muted-foreground">The calendar couldn't load. Try again shortly.</div>,
+  notFoundComponent: () => <div className="p-20 text-center text-muted-foreground">Not found</div>,
   component: Index,
 });
 
@@ -28,30 +36,30 @@ function useNow() {
 }
 
 function Index() {
+  const { data } = useSuspenseQuery(calendarQuery);
+  const now = useNow();
   const [what, setWhat] = useState<Record<string, number>>({});
   const events = useMemo(
-    () => newsEvents.map((e): NewsEvent => (e.id in what ? { ...e, actual: what[e.id] ?? null } : e)),
-    [what],
+    () => data.events.map((e): NewsEvent => (e.id in what ? { ...e, actual: what[e.id] ?? null } : e)),
+    [data.events, what],
   );
-  const gold = computeSignal(events, "XAUUSD");
-  const ndx = computeSignal(events, "NASDAQ");
-  const [open, setOpen] = useState<string | null>("cpi");
+  // Signal = red news released in the last 24 hours (plus any what-if values).
+  const recent = useMemo(() => {
+    if (!now) return [];
+    const since = now.getTime() - 24 * 3600e3;
+    return events.filter((e) => e.id in what || (new Date(e.time).getTime() >= since && new Date(e.time) <= now));
+  }, [events, now, what]);
+  const gold = computeSignal(recent, "XAUUSD");
+  const ndx = computeSignal(recent, "NASDAQ");
+  const [open, setOpen] = useState<string | null>(null);
+  const labEvents = events.filter((e) => e.forecast !== null && (!now || new Date(e.time) >= new Date(now.getTime() - 24 * 3600e3))).slice(0, 4);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
       <div aria-hidden className="pointer-events-none absolute -right-20 top-40 select-none text-outline-giant text-[22rem]">
         RED<br />BOX
       </div>
-
-      <nav className="glass sticky top-4 z-20 mx-auto mt-4 flex w-fit items-center gap-8 rounded-full border px-5 py-2.5 text-sm">
-        <span className="font-bold tracking-tight">RED<span className="text-muted-foreground">BOX</span></span>
-        <a href="#signals" className="text-muted-foreground transition-colors hover:text-foreground">Signals</a>
-        <a href="#news" className="text-muted-foreground transition-colors hover:text-foreground">News</a>
-        <a href="#lab" className="text-muted-foreground transition-colors hover:text-foreground">What-if</a>
-        <span className="flex items-center gap-2 rounded-full bg-primary px-3 py-1 text-primary-foreground font-medium">
-          <span className="size-1.5 rounded-full bg-bull animate-pulse-dot" /> Live
-        </span>
-      </nav>
+      <SiteNav />
 
       <main className="relative mx-auto max-w-6xl px-10">
         <section className="pt-28 pb-20">
@@ -63,7 +71,7 @@ function Index() {
             Every high-impact release is scored against forecast and turned into a directional bias —
             with an honest confidence, never a guarantee.
           </p>
-          <NextNews events={events} />
+          <NextNews events={events} now={now} />
         </section>
 
         <section id="signals" className="grid grid-cols-2 gap-5 scroll-mt-24">
@@ -72,20 +80,23 @@ function Index() {
         </section>
 
         <section id="news" className="mt-24 scroll-mt-24">
-          <Heading k="02" title="Today's red box" sub="Click an event to see why it moves the market." />
+          <Heading k="02" title="This week's red box" sub="USD high-impact events. Click a released event to see why it moves the market." />
+          {data.error && <p className="mb-4 text-sm text-bear">{data.error}</p>}
           <div className="divide-y rounded-2xl border">
+            {events.length === 0 && <p className="px-6 py-14 text-center text-sm text-muted-foreground">No red-folder USD events this week.</p>}
             {events.map((e) => (
-              <NewsRow key={e.id} e={e} open={open === e.id} onToggle={() => setOpen(open === e.id ? null : e.id)} />
+              <NewsRow key={e.id} e={data.events.find((x) => x.id === e.id)!} now={now} open={open === e.id} onToggle={() => setOpen(open === e.id ? null : e.id)} />
             ))}
           </div>
         </section>
 
         <section id="lab" className="mt-24 scroll-mt-24">
-          <Heading k="03" title="What-if lab" sub="Drag a number before it's released and watch the signals react." />
+          <Heading k="03" title="What-if lab" sub="Drag a number and watch the signals react. Nothing is saved." />
           <div className="grid grid-cols-2 gap-5">
-            {newsEvents.filter((e) => e.forecast !== 0).map((e) => {
-              const v = what[e.id] ?? e.actual ?? e.forecast;
-              const span = Math.max(Math.abs(e.forecast) * 0.6, 0.3);
+            {labEvents.map((e) => {
+              const fc = e.forecast as number;
+              const v = what[e.id] ?? e.actual ?? fc;
+              const span = Math.max(Math.abs(fc) * 0.6, 0.3);
               return (
                 <div key={e.id} className="rounded-2xl border bg-card p-6">
                   <div className="flex items-baseline justify-between">
@@ -94,11 +105,11 @@ function Index() {
                   </div>
                   <input
                     type="range" className="mt-5 w-full accent-gold"
-                    min={e.forecast - span} max={e.forecast + span} step={span / 50} value={v}
+                    min={fc - span} max={fc + span} step={span / 50} value={v}
                     onChange={(ev) => setWhat({ ...what, [e.id]: Number(ev.target.value) })}
                   />
                   <div className="mt-2 flex justify-between font-mono text-xs text-muted-foreground">
-                    <span>forecast {e.forecast}{e.unit}</span>
+                    <span>forecast {fc}{e.unit}</span>
                     <span className={toneText[eventBias({ ...e, actual: v }, "XAUUSD")]}>gold {eventBias({ ...e, actual: v }, "XAUUSD")}</span>
                   </div>
                 </div>
@@ -113,7 +124,7 @@ function Index() {
         </section>
 
         <footer className="mt-32 border-t py-10 text-xs text-muted-foreground">
-          Signals are educational analysis of economic news, not financial advice. Trading carries risk.
+          Calendar from Forex Factory. Signals are educational analysis of economic news, not financial advice. Trading carries risk.
         </footer>
       </main>
     </div>
@@ -146,7 +157,9 @@ function SignalCard({ s, name }: { s: Signal; name: string }) {
           <p className="font-mono text-xs tracking-widest text-muted-foreground">{s.asset === "XAUUSD" ? "XAUUSD" : "NAS100"}</p>
           <p className="mt-1 text-sm text-muted-foreground">{name}</p>
           <p key={s.action} className={`mt-8 animate-blur-in text-7xl font-bold tracking-[-0.04em] ${color}`}>{s.action}</p>
-          <p className="mt-3 text-sm text-muted-foreground">Based on {s.drivers} released event{s.drivers === 1 ? "" : "s"}</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            {s.drivers ? `Based on ${s.drivers} red-news release${s.drivers === 1 ? "" : "s"} in the last 24h` : "No released red news in the last 24h"}
+          </p>
         </div>
         <div className="relative size-36">
           <svg viewBox="0 0 128 128" className="size-full -rotate-90">
@@ -168,25 +181,28 @@ function SignalCard({ s, name }: { s: Signal; name: string }) {
 }
 
 function BiasChip({ e, asset }: { e: NewsEvent; asset: Asset }) {
+  if (e.forecast === null) return <span className="font-mono text-xs text-muted-foreground">—</span>;
   if (e.actual === null) return <span className="font-mono text-xs text-muted-foreground">pending</span>;
   const b = eventBias(e, asset);
   return <span className={`font-mono text-xs ${toneText[b]}`}>{b === "bullish" ? "▲" : b === "bearish" ? "▼" : "■"} {b}</span>;
 }
 
-function NewsRow({ e, open, onToggle }: { e: NewsEvent; open: boolean; onToggle: () => void }) {
+function NewsRow({ e, now, open, onToggle }: { e: NewsEvent; now: Date | null; open: boolean; onToggle: () => void }) {
   const t = new Date(e.time);
+  const day = t.toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" });
   const time = `${String(t.getUTCHours()).padStart(2, "0")}:${String(t.getUTCMinutes()).padStart(2, "0")}`;
+  const released = now ? t <= now : false;
   return (
-    <div>
-      <button onClick={onToggle} className="grid w-full grid-cols-[80px_1fr_150px_110px_110px] items-center gap-4 px-6 py-5 text-left transition-colors hover:bg-faint">
-        <span className="font-mono text-sm text-muted-foreground">{time}</span>
+    <div className={released ? "" : "opacity-90"}>
+      <button onClick={onToggle} className="grid w-full grid-cols-[110px_1fr_150px_110px_110px] items-center gap-4 px-6 py-5 text-left transition-colors hover:bg-faint">
+        <span className="font-mono text-sm text-muted-foreground">{day} {time}</span>
         <span className="flex items-center gap-3">
           <span className="size-2.5 rounded-sm bg-bear" />
           <span className="font-medium">{e.title}</span>
           <span className="font-mono text-xs text-muted-foreground">{e.currency}</span>
         </span>
         <span className="font-mono text-sm">
-          {e.forecast === 0 ? <span className="text-muted-foreground">speech</span> : (
+          {e.forecast === null ? <span className="text-muted-foreground">speech / no forecast</span> : (
             <>
               <span className={e.actual === null ? "text-muted-foreground" : ""}>{e.actual ?? "—"}{e.actual !== null && e.unit}</span>
               <span className="text-muted-foreground"> / {e.forecast}{e.unit}</span>
@@ -197,27 +213,64 @@ function NewsRow({ e, open, onToggle }: { e: NewsEvent; open: boolean; onToggle:
         <span>NDX <BiasChip e={e} asset="NASDAQ" /></span>
       </button>
       {open && (
-        <div className="animate-blur-in px-6 pb-6 pl-[120px] text-sm text-muted-foreground">
-          {e.note} <span className="font-mono text-xs">· previous {e.previous}{e.unit}</span>
+        <div className="animate-blur-in space-y-4 px-6 pb-6 pl-[134px] text-sm text-muted-foreground">
+          <p>{e.note}{e.previous !== null && <span className="font-mono text-xs"> · previous {e.previous}{e.unit}</span>}</p>
+          {released && e.forecast !== null && <ActualForm e={e} />}
         </div>
       )}
     </div>
   );
 }
 
-function NextNews({ events }: { events: NewsEvent[] }) {
-  const now = useNow();
-  const next = now && events.filter((e) => new Date(e.time) > now).sort((a, b) => a.time.localeCompare(b.time))[0];
+function ActualForm({ e }: { e: NewsEvent }) {
+  const save = useServerFn(saveActual);
+  const qc = useQueryClient();
+  const router = useRouter();
+  const [actual, setActual] = useState(e.actual?.toString() ?? "");
+  const [pass, setPass] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function submit(ev: React.FormEvent) {
+    ev.preventDefault();
+    const n = Number(actual);
+    if (actual.trim() === "" || !Number.isFinite(n)) return setMsg("Enter a number");
+    setBusy(true);
+    const r = await save({ data: { eventKey: e.id, actual: n, passcode: pass } });
+    setBusy(false);
+    setMsg(r.ok ? "Saved — signal recorded in history" : r.error);
+    if (r.ok) { await qc.invalidateQueries({ queryKey: ["calendar"] }); qc.invalidateQueries({ queryKey: ["history"] }); router.invalidate(); }
+  }
+
+  return (
+    <form onSubmit={submit} className="flex flex-wrap items-center gap-3">
+      <span className="font-mono text-xs uppercase tracking-widest">Actual</span>
+      <input value={actual} onChange={(x) => setActual(x.target.value)} inputMode="decimal" placeholder={`e.g. ${e.forecast}`}
+        className="w-28 rounded-lg border bg-background px-3 py-2 font-mono text-foreground outline-none focus:border-gold" />
+      <input value={pass} onChange={(x) => setPass(x.target.value)} type="password" placeholder="Passcode"
+        className="w-36 rounded-lg border bg-background px-3 py-2 text-foreground outline-none focus:border-gold" />
+      <button disabled={busy} className="rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground disabled:opacity-50">
+        {busy ? "Saving…" : "Save"}
+      </button>
+      {msg && <span className="text-xs">{msg}</span>}
+    </form>
+  );
+}
+
+function NextNews({ events, now }: { events: NewsEvent[]; now: Date | null }) {
+  const next = now && events.find((e) => new Date(e.time) > now);
   let label = "--:--:--";
   if (now && next) {
     const d = Math.floor((new Date(next.time).getTime() - now.getTime()) / 1000);
-    label = [d / 3600, (d % 3600) / 60, d % 60].map((n) => String(Math.floor(n)).padStart(2, "0")).join(":");
+    const days = Math.floor(d / 86400);
+    const hms = [(d % 86400) / 3600, (d % 3600) / 60, d % 60].map((n) => String(Math.floor(n)).padStart(2, "0")).join(":");
+    label = days ? `${days}d ${hms}` : hms;
   }
   return (
     <div className="mt-12 inline-flex items-center gap-5 rounded-2xl border bg-card px-6 py-4">
       <span className="size-2 rounded-full bg-bear animate-pulse-dot" />
-      <span className="text-sm text-muted-foreground">Next red news{next ? ` · ${next.title}` : ""}</span>
-      <span className="font-mono text-2xl">{label}</span>
+      <span className="text-sm text-muted-foreground">{next ? `Next red news · ${next.title}` : now ? "No more red news this week" : "Next red news"}</span>
+      <span className="font-mono text-2xl">{next || !now ? label : ""}</span>
     </div>
   );
 }
