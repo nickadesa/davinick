@@ -143,7 +143,7 @@ function ShareForm() {
     const path = `${user.id}/${crypto.randomUUID()}.${file.name.split(".").pop()?.toLowerCase() || "png"}`;
     const up = await supabase.storage.from("trade-screenshots").upload(path, file, { contentType: file.type });
     if (up.error) { setBusy(false); return setMsg("Upload failed. Images up to 5 MB."); }
-    const name = (user.user_metadata?.full_name as string | undefined)?.trim() || user.email?.split("@")[0] || "Trader";
+    const name = (user.user_metadata?.["full_name"] as string | undefined)?.trim() || user.email?.split("@")[0] || "Trader";
     const { error } = await supabase.from("trade_posts").insert({
       user_id: user.id, author_name: name.slice(0, 40), direction: dir, entry_price: e, exit_price: x, lots: l, note: note.slice(0, 280), screenshot_path: path,
     });
