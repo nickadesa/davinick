@@ -56,14 +56,14 @@ function Index() {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      <div aria-hidden className="pointer-events-none absolute -right-20 top-40 select-none text-outline-giant text-[22rem]">
+      <div aria-hidden className="pointer-events-none absolute -right-20 top-40 hidden select-none text-outline-giant text-[22rem] md:block">
         RED<br />BOX
       </div>
       <SiteNav />
 
-      <main className="relative mx-auto max-w-6xl px-10">
-        <section className="pt-28 pb-20">
-          <h1 className="animate-blur-in text-7xl font-bold leading-[0.95] tracking-[-0.04em]">
+      <main className="relative mx-auto max-w-6xl px-5 sm:px-10">
+        <section className="pt-16 pb-14 sm:pt-28 sm:pb-20">
+          <h1 className="animate-blur-in text-5xl font-bold leading-[0.95] tracking-[-0.04em] sm:text-7xl">
             Read the news.<br /><span className="text-muted-foreground">Not the noise.</span>
           </h1>
           <p className="mt-6 font-mono text-xs uppercase tracking-[0.25em] text-muted-foreground">XAUUSD · GOLD SPOT · RED FOLDER ONLY</p>
@@ -155,9 +155,9 @@ function AiSection() {
         <p className="rounded-2xl border px-6 py-14 text-center text-sm text-muted-foreground">No AI analysis yet.</p>
       ) : (
         <div className="space-y-5">
-          <div className="rounded-2xl border bg-card p-8">
+          <div className="rounded-2xl border bg-card p-5 sm:p-8">
             <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Weekly outlook</p>
-            <p className="mt-3 max-w-3xl text-lg leading-relaxed">{a.outlook}</p>
+            <p className="mt-3 max-w-3xl text-base leading-relaxed sm:text-lg">{a.outlook}</p>
           </div>
           <AiSignalCard label="XAUUSD" name="Gold Spot / USD" s={a.xauusd} />
           <div className="flex items-center justify-between">
@@ -178,11 +178,11 @@ function AiSection() {
 function AiSignalCard({ label, name, s }: { label: string; name: string; s: { action: "BUY" | "SELL" | "NEUTRAL"; confidence: number; reasoning: string; entry: number | null; stopLoss: number | null; takeProfit: number | null } }) {
   const color = s.action === "BUY" ? "text-bull" : s.action === "SELL" ? "text-bear" : "text-muted-foreground";
   return (
-    <div className="rounded-3xl border bg-card p-8 transition-colors hover:border-gold/40">
+    <div className="rounded-3xl border bg-card p-5 transition-colors hover:border-gold/40 sm:p-8">
       <p className="font-mono text-xs tracking-widest text-muted-foreground">{label}</p>
       <p className="mt-1 text-sm text-muted-foreground">{name}</p>
       <div className="mt-6 flex items-baseline gap-4">
-        <p className={`text-5xl font-bold tracking-[-0.04em] ${color}`}>{s.action}</p>
+        <p className={`text-4xl font-bold tracking-[-0.04em] sm:text-5xl ${color}`}>{s.action}</p>
         <p className="font-mono text-xl text-muted-foreground">{s.confidence}%</p>
       </div>
       <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{s.reasoning}</p>
@@ -203,12 +203,12 @@ function fmt(n: number) {
 
 function Heading({ k, title, sub }: { k: string; title: string; sub: string }) {
   return (
-    <div className="mb-8 flex items-end justify-between">
+    <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p className="font-mono text-xs text-muted-foreground">{k}</p>
-        <h2 className="mt-2 text-4xl font-bold tracking-[-0.03em]">{title}</h2>
+        <h2 className="mt-2 text-3xl font-bold tracking-[-0.03em] sm:text-4xl">{title}</h2>
       </div>
-      <p className="max-w-xs text-right text-sm text-muted-foreground">{sub}</p>
+      <p className="max-w-xs text-sm text-muted-foreground sm:text-right">{sub}</p>
     </div>
   );
 }
@@ -217,17 +217,17 @@ function SignalCard({ s, name }: { s: Signal; name: string }) {
   const color = s.action === "BUY" ? "text-bull" : s.action === "SELL" ? "text-bear" : "text-muted-foreground";
   const r = 54, c = 2 * Math.PI * r;
   return (
-    <div className="group rounded-3xl border bg-card p-8 transition-colors hover:border-gold/40">
-      <div className="flex items-start justify-between">
+    <div className="group rounded-3xl border bg-card p-5 transition-colors hover:border-gold/40 sm:p-8">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <p className="font-mono text-xs tracking-widest text-muted-foreground">XAUUSD</p>
           <p className="mt-1 text-sm text-muted-foreground">{name}</p>
-          <p key={s.action} className={`mt-8 animate-blur-in text-7xl font-bold tracking-[-0.04em] ${color}`}>{s.action}</p>
+          <p key={s.action} className={`mt-6 animate-blur-in text-5xl font-bold tracking-[-0.04em] sm:mt-8 sm:text-7xl ${color}`}>{s.action}</p>
           <p className="mt-3 text-sm text-muted-foreground">
             {s.drivers ? `Based on ${s.drivers} red-news release${s.drivers === 1 ? "" : "s"} in the last 24h` : "No released red news in the last 24h"}
           </p>
         </div>
-        <div className="relative size-36">
+        <div className="relative size-24 shrink-0 sm:size-36">
           <svg viewBox="0 0 128 128" className="size-full -rotate-90">
             <circle cx="64" cy="64" r={r} fill="none" stroke="var(--muted)" strokeWidth="8" />
             <circle
@@ -237,7 +237,7 @@ function SignalCard({ s, name }: { s: Signal; name: string }) {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-3xl">{s.confidence}%</span>
+            <span className="font-mono text-xl sm:text-3xl">{s.confidence}%</span>
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground">confidence</span>
           </div>
         </div>
@@ -260,14 +260,14 @@ function NewsRow({ e, now, open, onToggle }: { e: NewsEvent; now: Date | null; o
   const released = now ? t <= now : false;
   return (
     <div className={released ? "" : "opacity-90"}>
-      <button onClick={onToggle} className="grid w-full grid-cols-[110px_1fr_150px_140px] items-center gap-4 px-6 py-5 text-left transition-colors hover:bg-faint">
-        <span className="font-mono text-sm text-muted-foreground">{day} {time}</span>
-        <span className="flex items-center gap-3">
-          <span className="size-2.5 rounded-sm bg-bear" />
+      <button onClick={onToggle} className="grid w-full grid-cols-[64px_1fr] items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-faint sm:grid-cols-[110px_1fr_150px_140px] sm:gap-4 sm:px-6 sm:py-5">
+        <span className="font-mono text-xs text-muted-foreground sm:text-sm">{day} {time}</span>
+        <span className="flex items-center gap-2 sm:gap-3">
+          <span className="size-2.5 shrink-0 rounded-sm bg-bear" />
           <span className="font-medium">{e.title}</span>
-          <span className="font-mono text-xs text-muted-foreground">{e.currency}</span>
+          <span className="hidden font-mono text-xs text-muted-foreground sm:inline">{e.currency}</span>
         </span>
-        <span className="font-mono text-sm">
+        <span className="col-span-2 pl-4 font-mono text-sm sm:col-span-1 sm:pl-0">
           {e.forecast === null ? <span className="text-muted-foreground">speech / no forecast</span> : (
             <>
               <span className={e.actual === null ? "text-muted-foreground" : ""}>{e.actual ?? "—"}{e.actual !== null && e.unit}</span>
@@ -275,10 +275,10 @@ function NewsRow({ e, now, open, onToggle }: { e: NewsEvent; now: Date | null; o
             </>
           )}
         </span>
-        <span>Gold <BiasChip e={e} asset="XAUUSD" /></span>
+        <span className="col-span-2 pl-4 sm:col-span-1 sm:pl-0">Gold <BiasChip e={e} asset="XAUUSD" /></span>
       </button>
       {open && (
-        <div className="animate-blur-in space-y-4 px-6 pb-6 pl-[134px] text-sm text-muted-foreground">
+        <div className="animate-blur-in space-y-4 px-4 pb-6 text-sm text-muted-foreground sm:px-6 sm:pl-[134px]">
           <p>{e.note}{e.previous !== null && <span className="font-mono text-xs"> · previous {e.previous}{e.unit}</span>}</p>
           {released && e.forecast !== null && <ActualForm e={e} />}
         </div>
@@ -332,10 +332,10 @@ function NextNews({ events, now }: { events: NewsEvent[]; now: Date | null }) {
     label = days ? `${days}d ${hms}` : hms;
   }
   return (
-    <div className="mt-12 inline-flex items-center gap-5 rounded-2xl border bg-card px-6 py-4">
+    <div className="mt-10 flex flex-wrap items-center gap-3 rounded-2xl border bg-card px-5 py-4 sm:mt-12 sm:inline-flex sm:gap-5 sm:px-6">
       <span className="size-2 rounded-full bg-bear animate-pulse-dot" />
       <span className="text-sm text-muted-foreground">{next ? `Next red news · ${next.title}` : now ? "No more red news this week" : "Next red news"}</span>
-      <span className="font-mono text-2xl">{next || !now ? label : ""}</span>
+      <span className="font-mono text-xl sm:text-2xl">{next || !now ? label : ""}</span>
     </div>
   );
 }
