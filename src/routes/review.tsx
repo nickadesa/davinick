@@ -7,10 +7,12 @@ import { SiteNav } from "@/components/SiteNav";
 export const Route = createFileRoute("/review")({
   head: () => ({
     meta: [
-      { title: "Review trades — Red Box" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Review trades — TOPTIERclub" },
       { name: "description", content: "Approve or reject community trade submissions." },
       { name: "robots", content: "noindex" },
-      { property: "og:title", content: "Review trades — Red Box" },
+      { property: "og:title", content: "Review trades — TOPTIERclub" },
       { property: "og:description", content: "Moderation queue for community trades." },
     ],
   }),

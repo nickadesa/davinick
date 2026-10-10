@@ -18,3 +18,4 @@
 - Community trades live in `trade_posts` (status pending/approved/rejected) with screenshots in the private `trade-screenshots` bucket; public reads go through `getCommunity` which signs image URLs server-side — workspace blocks public buckets.
 - Trade moderation uses the existing `ADMIN_PASSCODE` on `/review` rather than an admin role table — single owner, keeps one admin mechanism.
 - Desk chart is a hand-drawn SVG candlestick (no chart library) so it renders during SSR; fib/lot-size/PnL maths are pure functions in `signals.ts`.
+- All content pages share `SiteNav` with a Radix dropdown and pathname-based active links — keeps navigation consistent and keyboard-accessible on desktop and mobile.

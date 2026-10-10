@@ -12,9 +12,11 @@ const candlesQuery = (interval: Interval) =>
 export const Route = createFileRoute("/desk")({
   head: () => ({
     meta: [
-      { title: "Gold signal desk — Red Box" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Gold signal desk — TOPTIERclub" },
       { name: "description", content: "Live XAUUSD chart with automatic 61.8% and 78.6% Fibonacci zones, a news-trading playbook and a lot size calculator." },
-      { property: "og:title", content: "Gold signal desk — Red Box" },
+      { property: "og:title", content: "Gold signal desk — TOPTIERclub" },
       { property: "og:description", content: "Gold chart, fib zones, strategy and risk calculator in one place." },
     ],
   }),
