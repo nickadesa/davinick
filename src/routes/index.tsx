@@ -12,9 +12,11 @@ const aiQuery = queryOptions({ queryKey: ["ai-analysis"], queryFn: () => getAiAn
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Red Box — News-driven gold signals" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "TOPTIERclub — News-driven gold signals" },
       { name: "description", content: "High-impact economic news analysed into BUY/SELL bias with a confidence score for XAUUSD." },
-      { property: "og:title", content: "Red Box — News-driven gold signals" },
+      { property: "og:title", content: "TOPTIERclub — News-driven gold signals" },
       { property: "og:description", content: "Red-folder news in, confidence-scored gold bias out." },
     ],
   }),
@@ -56,8 +58,8 @@ function Index() {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      <div aria-hidden className="pointer-events-none absolute -right-20 top-40 hidden select-none text-outline-giant text-[22rem] md:block">
-        RED<br />BOX
+      <div aria-hidden className="pointer-events-none absolute -right-20 top-40 hidden select-none text-outline-giant text-[12rem] lg:block">
+        TOPTIER<br />club
       </div>
       <SiteNav />
 
@@ -81,7 +83,7 @@ function Index() {
         <AiSection />
 
         <section id="news" className="mt-24 scroll-mt-24">
-          <Heading k="02" title="This week's red box" sub="USD high-impact events. Click a released event to see why it moves the market." />
+          <Heading k="02" title="This week's red news" sub="USD high-impact events. Click a released event to see why it moves the market." />
           {data.error && <p className="mb-4 text-sm text-bear">{data.error}</p>}
           <div className="divide-y rounded-2xl border">
             {events.length === 0 && <p className="px-6 py-14 text-center text-sm text-muted-foreground">No red-folder USD events this week.</p>}

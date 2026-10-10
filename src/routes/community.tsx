@@ -12,9 +12,11 @@ const communityQuery = queryOptions({ queryKey: ["community"], queryFn: () => ge
 export const Route = createFileRoute("/community")({
   head: () => ({
     meta: [
-      { title: "Community trades — Red Box" },
-      { name: "description", content: "Real gold trades shared by Red Box members, with screenshots and a leaderboard." },
-      { property: "og:title", content: "Community trades — Red Box" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Community trades — TOPTIERclub" },
+      { name: "description", content: "Real gold trades shared by TOPTIERclub members, with screenshots and a leaderboard." },
+      { property: "og:title", content: "Community trades — TOPTIERclub" },
       { property: "og:description", content: "See how members traded the gold signals." },
     ],
   }),

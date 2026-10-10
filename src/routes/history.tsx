@@ -9,9 +9,11 @@ const historyQuery = queryOptions({ queryKey: ["history"], queryFn: () => getHis
 export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
-      { title: "Signal history — Red Box" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Signal history — TOPTIERclub" },
       { name: "description", content: "Every XAUUSD news signal, compared with the price 1 and 4 hours later." },
-      { property: "og:title", content: "Signal history — Red Box" },
+      { property: "og:title", content: "Signal history — TOPTIERclub" },
       { property: "og:description", content: "How did the news-driven signals actually perform?" },
     ],
   }),

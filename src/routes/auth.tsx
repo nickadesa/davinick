@@ -8,10 +8,12 @@ import { SiteNav } from "@/components/SiteNav";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Red Box" },
-      { name: "description", content: "Sign in to share your gold trades with the Red Box community." },
-      { property: "og:title", content: "Sign in — Red Box" },
-      { property: "og:description", content: "Join the Red Box trading community." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Sign in — TOPTIERclub" },
+      { name: "description", content: "Sign in to share your gold trades with the TOPTIERclub community." },
+      { property: "og:title", content: "Sign in — TOPTIERclub" },
+      { property: "og:description", content: "Join the TOPTIERclub trading community." },
     ],
   }),
   component: AuthPage,
