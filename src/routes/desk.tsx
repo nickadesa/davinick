@@ -42,17 +42,17 @@ function Desk() {
   return (
     <div className="min-h-screen">
       <SiteNav />
-      <main className="mx-auto max-w-6xl px-10 pb-24">
-        <section className="pt-24 pb-12">
-          <h1 className="animate-blur-in text-6xl font-bold tracking-[-0.04em]">Signal desk.<br /><span className="text-muted-foreground">Gold, measured.</span></h1>
+      <main className="mx-auto max-w-6xl px-5 pb-24 sm:px-10">
+        <section className="pt-16 pb-10 sm:pt-24 sm:pb-12">
+          <h1 className="animate-blur-in text-4xl font-bold tracking-[-0.04em] sm:text-6xl">Signal desk.<br /><span className="text-muted-foreground">Gold, measured.</span></h1>
           <p className="mt-6 max-w-lg text-muted-foreground">Live XAUUSD with the golden-zone retracements drawn for you. News gives the direction, fib gives the entry.</p>
         </section>
 
-        <div className="rounded-3xl border bg-card p-8">
-          <div className="flex items-end justify-between">
+        <div className="rounded-3xl border bg-card p-5 sm:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="font-mono text-xs tracking-widest text-muted-foreground">XAUUSD · GOLD SPOT</p>
-              <p className="mt-2 font-mono text-5xl">{last?.toFixed(2) ?? "—"}</p>
+              <p className="mt-2 font-mono text-4xl sm:text-5xl">{last?.toFixed(2) ?? "—"}</p>
             </div>
             <div className="flex gap-1 rounded-full border p-1 font-mono text-xs">
               {(["15min", "1h", "4h"] as Interval[]).map((i) => (
@@ -63,10 +63,10 @@ function Desk() {
               ))}
             </div>
           </div>
-          {data?.error && <p className="mt-6 text-sm text-bear">{data.error}</p>}
-          {candles.length > 0 && sw ? <Chart candles={candles} sw={sw} /> : <div className="mt-8 h-[420px] animate-pulse rounded-2xl bg-muted/30" />}
+{data?.error && <p className="mt-6 text-sm text-bear">{data.error}</p>}
+          {candles.length > 0 && sw ? <Chart candles={candles} sw={sw} /> : <div className="mt-8 h-[260px] animate-pulse rounded-2xl bg-muted/30 sm:h-[420px]" />}
           {sw && (
-            <div className="mt-6 grid grid-cols-4 gap-4 border-t pt-6 font-mono text-sm">
+            <div className="mt-6 grid grid-cols-2 gap-4 border-t pt-6 font-mono text-sm sm:grid-cols-4">
               <Stat k="Swing" v={sw.trend === "up" ? "▲ Up-swing" : "▼ Down-swing"} tone={sw.trend === "up" ? "text-bull" : "text-bear"} />
               <Stat k="Fib 61.8%" v={sw.f618.toFixed(2)} tone="text-gold" />
               <Stat k="Fib 78.6%" v={sw.f786.toFixed(2)} tone="text-gold" />
@@ -95,7 +95,7 @@ function Chart({ candles, sw }: { candles: Candle[]; sw: ReturnType<typeof swing
   const step = W / candles.length;
   const zoneTop = y(Math.max(sw.f618, sw.f786)), zoneBot = y(Math.min(sw.f618, sw.f786));
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="mt-8 h-[420px] w-full" preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${W} ${H}`} className="mt-8 h-[260px] w-full sm:h-[420px]" preserveAspectRatio="none">
       <rect x={0} y={zoneTop} width={W} height={zoneBot - zoneTop} className="fill-gold/10" />
       {[{ p: sw.f618, l: "61.8%" }, { p: sw.f786, l: "78.6%" }].map((f) => (
         <g key={f.l}>
@@ -128,11 +128,11 @@ const steps = [
 function Playbook() {
   return (
     <section className="mt-24">
-      <div className="mb-8 flex items-end justify-between">
-        <div><p className="font-mono text-xs text-muted-foreground">STRATEGY</p><h2 className="mt-2 text-4xl font-bold tracking-[-0.03em]">News + fib playbook</h2></div>
-        <p className="max-w-xs text-right text-sm text-muted-foreground">Six rules. Direction from the news, location from the fib.</p>
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div><p className="font-mono text-xs text-muted-foreground">STRATEGY</p><h2 className="mt-2 text-3xl font-bold tracking-[-0.03em] sm:text-4xl">News + fib playbook</h2></div>
+        <p className="max-w-xs text-sm text-muted-foreground sm:text-right">Six rules. Direction from the news, location from the fib.</p>
       </div>
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {steps.map((s, i) => (
           <div key={s.t} className="rounded-2xl border bg-card p-6 transition-colors hover:border-gold/40">
             <p className="font-mono text-xs text-gold">0{i + 1}</p>
@@ -154,19 +154,19 @@ function Calculator({ price }: { price: number | null }) {
   const field = "mt-2 w-full rounded-lg border bg-background px-3 py-2 font-mono outline-none focus:border-gold";
   return (
     <section className="mt-24">
-      <div className="mb-8 flex items-end justify-between">
-        <div><p className="font-mono text-xs text-muted-foreground">RISK</p><h2 className="mt-2 text-4xl font-bold tracking-[-0.03em]">Lot size calculator</h2></div>
-        <p className="max-w-xs text-right text-sm text-muted-foreground">Gold: 1 lot = 100 oz, so a $1 move is $100 per lot.</p>
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div><p className="font-mono text-xs text-muted-foreground">RISK</p><h2 className="mt-2 text-3xl font-bold tracking-[-0.03em] sm:text-4xl">Lot size calculator</h2></div>
+        <p className="max-w-xs text-sm text-muted-foreground sm:text-right">Gold: 1 lot = 100 oz, so a $1 move is $100 per lot.</p>
       </div>
-      <div className="grid grid-cols-[1fr_320px] gap-5 rounded-3xl border bg-card p-8">
-        <div className="grid grid-cols-3 gap-5 text-sm">
+      <div className="grid grid-cols-1 gap-5 rounded-3xl border bg-card p-5 sm:p-8 md:grid-cols-[1fr_320px]">
+        <div className="grid grid-cols-1 gap-5 text-sm sm:grid-cols-3">
           <label>Account balance ($)<input className={field} value={bal} onChange={(e) => setBal(e.target.value)} inputMode="decimal" /></label>
           <label>Risk per trade (%)<input className={field} value={risk} onChange={(e) => setRisk(e.target.value)} inputMode="decimal" /></label>
           <label>Stop distance ($){price && <span className="text-muted-foreground"> · gold {price.toFixed(0)}</span>}<input className={field} value={stop} onChange={(e) => setStop(e.target.value)} inputMode="decimal" /></label>
         </div>
-        <div className="border-l pl-8">
+        <div className="border-t pt-6 md:border-l md:border-t-0 md:pl-8 md:pt-0">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Position size</p>
-          <p className="mt-2 font-mono text-5xl text-gold">{lots.toFixed(2)}<span className="text-lg text-muted-foreground"> lots</span></p>
+          <p className="mt-2 font-mono text-4xl text-gold sm:text-5xl">{lots.toFixed(2)}<span className="text-lg text-muted-foreground"> lots</span></p>
           <p className="mt-2 text-sm text-muted-foreground">Risking ${Number.isFinite(riskUsd) ? riskUsd.toFixed(2) : "—"}</p>
         </div>
       </div>
