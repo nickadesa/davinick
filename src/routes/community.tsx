@@ -34,13 +34,13 @@ function Community() {
   return (
     <div className="min-h-screen">
       <SiteNav />
-      <main className="mx-auto max-w-6xl px-10 pb-24">
-        <section className="pt-24 pb-12">
-          <h1 className="animate-blur-in text-6xl font-bold tracking-[-0.04em]">Community.<br /><span className="text-muted-foreground">Proof, not promises.</span></h1>
+      <main className="mx-auto max-w-6xl px-5 pb-24 sm:px-10">
+        <section className="pt-16 pb-10 sm:pt-24 sm:pb-12">
+          <h1 className="animate-blur-in text-4xl font-bold tracking-[-0.04em] sm:text-6xl">Community.<br /><span className="text-muted-foreground">Proof, not promises.</span></h1>
           <p className="mt-6 max-w-lg text-muted-foreground">Members share the gold trades they took from the signals. Every post is checked before it goes live.</p>
         </section>
 
-        <div className="grid grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <Big k="Shared trades" v={String(data.posts.length)} />
           <Big k="Win rate" v={data.posts.length ? `${Math.round((wins / data.posts.length) * 100)}%` : "—"} />
           <Big k="Combined result" v={data.posts.length ? money(total) : "—"} tone={total >= 0 ? "text-bull" : "text-bear"} />
@@ -48,12 +48,12 @@ function Community() {
 
         <ShareForm />
 
-        <div className="mt-16 grid grid-cols-[1fr_320px] gap-8">
+        <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]">
           <section>
             <h2 className="mb-6 text-3xl font-bold tracking-[-0.03em]">Latest trades</h2>
             {data.error && <p className="text-sm text-bear">{data.error}</p>}
             {data.posts.length === 0 && <p className="rounded-2xl border px-6 py-14 text-center text-sm text-muted-foreground">No approved trades yet. Be the first to share one.</p>}
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               {data.posts.map((p) => (
                 <article key={p.id} className="overflow-hidden rounded-2xl border bg-card">
                   {p.image && <a href={p.image} target="_blank" rel="noreferrer"><img src={p.image} alt={`${p.author_name}'s gold trade chart`} className="aspect-video w-full object-cover" loading="lazy" /></a>}
@@ -96,9 +96,9 @@ function Community() {
 
 function Big({ k, v, tone = "" }: { k: string; v: string; tone?: string }) {
   return (
-    <div className="rounded-3xl border bg-card p-8">
+    <div className="rounded-3xl border bg-card p-6 sm:p-8">
       <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{k}</p>
-      <p className={`mt-4 font-mono text-5xl ${tone}`}>{v}</p>
+      <p className={`mt-4 font-mono text-4xl sm:text-5xl ${tone}`}>{v}</p>
     </div>
   );
 }
@@ -124,9 +124,9 @@ function ShareForm() {
   if (!ready) return null;
   if (!user) {
     return (
-      <div className="mt-8 flex items-center justify-between rounded-2xl border bg-card px-8 py-6">
+      <div className="mt-8 flex flex-col gap-4 rounded-2xl border bg-card px-6 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <p className="text-muted-foreground">Took a trade from a signal? Share it with the community.</p>
-        <Link to="/auth" className="rounded-lg bg-primary px-5 py-2.5 font-medium text-primary-foreground">Sign in to share</Link>
+        <Link to="/auth" className="rounded-lg bg-primary px-5 py-2.5 text-center font-medium text-primary-foreground">Sign in to share</Link>
       </div>
     );
   }
@@ -156,12 +156,12 @@ function ShareForm() {
 
   const field = "mt-2 w-full rounded-lg border bg-background px-3 py-2 font-mono outline-none focus:border-gold";
   return (
-    <div className="mt-8 rounded-3xl border bg-card p-8">
+    <div className="mt-8 rounded-3xl border bg-card p-5 sm:p-8">
       <div className="flex items-baseline justify-between">
         <h2 className="text-2xl font-bold tracking-[-0.03em]">Share a trade</h2>
         <button onClick={() => supabase.auth.signOut()} className="text-xs text-muted-foreground hover:text-foreground">Sign out</button>
       </div>
-      <form onSubmit={submit} className="mt-6 grid grid-cols-5 items-end gap-4 text-sm">
+      <form onSubmit={submit} className="mt-6 grid grid-cols-2 items-end gap-4 text-sm sm:grid-cols-5">
         <div>
           <span>Direction</span>
           <div className="mt-2 flex gap-1 rounded-lg border p-1">
@@ -175,7 +175,7 @@ function ShareForm() {
         <label>Exit<input className={field} value={exit} onChange={(v) => setExit(v.target.value)} inputMode="decimal" placeholder="4135.00" /></label>
         <label>Lots<input className={field} value={lots} onChange={(v) => setLots(v.target.value)} inputMode="decimal" /></label>
         <label>Screenshot<input type="file" accept="image/*" onChange={(v) => setFile(v.target.files?.[0] ?? null)} className="mt-2 w-full text-xs text-muted-foreground file:mr-2 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-foreground" /></label>
-        <label className="col-span-4">Note (optional)<input className={field} maxLength={280} value={note} onChange={(v) => setNote(v.target.value)} placeholder="Bought the 61.8% after soft CPI" /></label>
+        <label className="col-span-2 sm:col-span-4">Note (optional)<input className={field} maxLength={280} value={note} onChange={(v) => setNote(v.target.value)} placeholder="Bought the 61.8% after soft CPI" /></label>
         <button disabled={busy} className="rounded-lg bg-primary py-2.5 font-medium text-primary-foreground disabled:opacity-50">{busy ? "Sending…" : "Submit"}</button>
       </form>
       <div className="mt-4 flex justify-between text-sm">

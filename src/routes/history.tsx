@@ -45,23 +45,24 @@ function HistoryPage() {
   return (
     <div className="min-h-screen">
       <SiteNav />
-      <main className="mx-auto max-w-6xl px-10 pb-24">
-        <section className="pt-24 pb-14">
-          <h1 className="animate-blur-in text-6xl font-bold tracking-[-0.04em]">Signal history.<br /><span className="text-muted-foreground">Honest scorecard.</span></h1>
+      <main className="mx-auto max-w-6xl px-5 pb-24 sm:px-10">
+        <section className="pt-16 pb-10 sm:pt-24 sm:pb-14">
+          <h1 className="animate-blur-in text-4xl font-bold tracking-[-0.04em] sm:text-6xl">Signal history.<br /><span className="text-muted-foreground">Honest scorecard.</span></h1>
           <p className="mt-6 max-w-lg text-muted-foreground">Every signal is stored when a red-news figure comes out, then checked against the price 1 hour and 4 hours later. Wins are judged on the 4-hour move.</p>
         </section>
 
         <div className="grid grid-cols-1 gap-5">
           {stats.map((s) => (
-            <div key={s.asset} className="rounded-3xl border bg-card p-8">
+            <div key={s.asset} className="rounded-3xl border bg-card p-6 sm:p-8">
               <p className="font-mono text-xs tracking-widest text-muted-foreground">{s.asset} · 4H HIT RATE</p>
-              <p className="mt-4 font-mono text-6xl">{s.rate === null ? "—" : `${s.rate}%`}</p>
+              <p className="mt-4 font-mono text-5xl sm:text-6xl">{s.rate === null ? "—" : `${s.rate}%`}</p>
               <p className="mt-2 text-sm text-muted-foreground">{s.wins} correct out of {s.done} scored signals</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-12 rounded-2xl border">
+        <div className="mt-12 overflow-x-auto rounded-2xl border">
+          <div className="min-w-[780px]">
           <div className="grid grid-cols-[150px_90px_80px_1fr_110px_90px_90px_80px] gap-4 border-b px-6 py-3 font-mono text-xs uppercase tracking-wider text-muted-foreground">
             <span>Time (UTC)</span><span>Asset</span><span>Signal</span><span>Triggered by</span><span>Entry</span><span>1h</span><span>4h</span><span>Result</span>
           </div>
@@ -85,6 +86,7 @@ function HistoryPage() {
               </div>
             );
           })}
+          </div>
         </div>
         <p className="mt-6 text-xs text-muted-foreground">Past results don't guarantee future performance. Not financial advice.</p>
       </main>

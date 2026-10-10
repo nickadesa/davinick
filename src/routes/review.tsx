@@ -41,8 +41,8 @@ function Review() {
   return (
     <div className="min-h-screen">
       <SiteNav />
-      <main className="mx-auto max-w-5xl px-10 pb-24 pt-24">
-        <h1 className="text-5xl font-bold tracking-[-0.04em]">Review queue</h1>
+      <main className="mx-auto max-w-5xl px-5 pb-24 pt-16 sm:px-10 sm:pt-24">
+        <h1 className="text-4xl font-bold tracking-[-0.04em] sm:text-5xl">Review queue</h1>
         {!posts ? (
           <form onSubmit={open} className="mt-8 flex gap-3">
             <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="Admin passcode"
@@ -52,7 +52,7 @@ function Review() {
         ) : posts.length === 0 ? (
           <p className="mt-8 text-muted-foreground">Nothing waiting. All caught up.</p>
         ) : (
-          <div className="mt-8 grid grid-cols-2 gap-5">
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
             {posts.map((p) => (
               <div key={p.id} className="overflow-hidden rounded-2xl border bg-card">
                 {p.image && <a href={p.image} target="_blank" rel="noreferrer"><img src={p.image} alt="Submitted trade chart" className="aspect-video w-full object-cover" /></a>}
