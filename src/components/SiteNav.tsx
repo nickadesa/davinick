@@ -6,7 +6,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 const pages = [
   { to: "/", label: "Signals & news", icon: Newspaper },
   { to: "/desk", label: "Gold signal desk", icon: ChartCandlestick },
-  { to: "/community", label: "Community", icon: Users },
   { to: "/history", label: "Performance history", icon: History },
 ] as const;
 
@@ -30,8 +29,6 @@ export function SiteNav() {
                   <Link to={to} aria-current={pathname === to ? "page" : undefined} className={pathname === to ? "bg-accent text-accent-foreground" : "text-muted-foreground"}><Icon /><span>{label}</span>{pathname === to && <Zap className="ml-auto text-bull" />}</Link>
                 </DropdownMenuItem>
               ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild className="p-3"><Link to="/auth">Sign in<ArrowUpRight className="ml-auto" /></Link></DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
