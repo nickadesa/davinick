@@ -23,7 +23,7 @@ const analysisSchema = z.object({
   outlook: z.string().describe("2-3 sentence weekly outlook for gold based on this week's high-impact USD events"),
   xauusd: z.object({
     action: z.enum(["BUY", "SELL", "NEUTRAL"]),
-    confidence: z.number().min(50).max(95),
+    confidence: z.number().describe("50-95"),
     reasoning: z.string().describe("1-2 sentences"),
     entry: z.number().nullable(),
     stopLoss: z.number().nullable(),
@@ -32,8 +32,14 @@ const analysisSchema = z.object({
   events: z.array(
     z.object({
       title: z.string(),
-      bias: z.enum(["bullish", "bearish", "neutral"]),
-      note: z.string().describe("one short sentence on expected market reaction"),
+      time: z.string().describe("event time as given, e.g. 2026-10-14T12:30"),
+      released: z.boolean(),
+      bias: z.enum(["bullish", "bearish", "neutral"]).describe("expected gold bias going into / after the release"),
+      signal: z.enum(["BUY", "SELL", "NEUTRAL"]).describe("pre-release gold signal"),
+      confidence: z.number().describe("50-95"),
+      note: z.string().describe("one short sentence: what the market expects and why"),
+      ifBeat: z.string().describe("short: gold reaction if US data beats forecast"),
+      ifMiss: z.string().describe("short: gold reaction if US data misses forecast"),
     }),
   ),
 });
@@ -63,11 +69,11 @@ export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: numbe
   const result = streamText({
     model: provider.responses("openai/gpt-6-astra"),
     system:
-      "You are a macro trading analyst. Analyse high-impact US economic events and give directional signals for XAUUSD (gold). Stronger-than-expected US data usually lifts the dollar and yields, pressuring gold; weak data does the opposite. Confidence is 50-95, never 100. Suggest entry, stop loss and take profit levels near the current price given; where useful, place entries at the 61.8% or 78.6% Fibonacci retracement of the latest swing, with roughly 1:2 risk-reward; use null when the action is NEUTRAL. Keep every text field short.",
+      "You are a macro trading analyst. Analyse high-impact US economic events and give directional signals for XAUUSD (gold). Stronger-than-expected US data usually lifts the dollar and yields, pressuring gold; weak data does the opposite. Confidence is 50-95, never 100. Suggest entry, stop loss and take profit levels near the current price given; where useful, place entries at the 61.8% or 78.6% Fibonacci retracement of the latest swing, with roughly 1:2 risk-reward; use null when the action is NEUTRAL. For EVERY event in the list (especially ones not yet released) give a pre-release call: read forecast vs previous, recent trend and market positioning to predict whether the figure is likely to beat or miss, then give the expected gold bias, a BUY/SELL/NEUTRAL signal with confidence, and what happens to gold if it beats or misses. Pre-release confidence should usually stay 50-70 since the number is unknown. Keep every text field short.",
     messages: [
       {
         role: "user",
-        content: `This week's high-impact USD events:\n${eventLines || "(none)"}\n\nCurrent XAUUSD price: ${prices.xauusd ?? "unknown"}. Give the analysis as JSON.`,
+        content: `Now: ${new Date().toISOString().slice(0, 16)}Z\nThis week's high-impact USD events:\n${eventLines || "(none)"}\n\nCurrent XAUUSD price: ${prices.xauusd ?? "unknown"}. Give the analysis as JSON.`,
       },
     ],
     output: Output.object({ schema: analysisSchema }),
@@ -83,5 +89,8 @@ export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: numbe
   });
 
   const object = await result.output;
+  const clamp = (n: number) => Math.round(Math.min(95, Math.max(50, n)));
+  object.xauusd.confidence = clamp(object.xauusd.confidence);
+  object.events = object.events.map((e) => ({ ...e, confidence: clamp(e.confidence) }));
   return { ...object, generatedAt: new Date().toISOString() };
 }
