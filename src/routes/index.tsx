@@ -162,6 +162,35 @@ function AiSection() {
             <p className="mt-3 max-w-3xl text-base leading-relaxed sm:text-lg">{a.outlook}</p>
           </div>
           <AiSignalCard label="XAUUSD" name="Gold Spot / USD" s={a.xauusd} />
+          {a.events.some((ev) => "signal" in ev) && (
+            <div>
+              <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Pre-release calls · before the news drops</p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {a.events.filter((ev) => "signal" in ev).map((ev, i) => {
+                  const c = ev.signal === "BUY" ? "text-bull" : ev.signal === "SELL" ? "text-bear" : "text-muted-foreground";
+                  return (
+                    <div key={i} className="rounded-2xl border bg-card p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium">{ev.title}</p>
+                          <p className="mt-1 font-mono text-xs text-muted-foreground">{ev.time?.slice(0, 16).replace("T", " ")} · {ev.released ? "released" : "upcoming"}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-2xl font-bold ${c}`}>{ev.signal}</p>
+                          <p className="font-mono text-xs text-muted-foreground">{ev.confidence}% · {ev.bias}</p>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm text-muted-foreground">{ev.note}</p>
+                      <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-3 text-xs">
+                        <p><span className="font-mono uppercase tracking-widest text-muted-foreground">If beats</span><br />{ev.ifBeat}</p>
+                        <p><span className="font-mono uppercase tracking-widest text-muted-foreground">If misses</span><br />{ev.ifMiss}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <p className="font-mono text-xs text-muted-foreground">
               Generated {new Date(a.generatedAt).toLocaleString("en-GB", { timeZone: "UTC" })} UTC

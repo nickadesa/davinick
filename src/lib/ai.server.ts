@@ -23,7 +23,7 @@ const analysisSchema = z.object({
   outlook: z.string().describe("2-3 sentence weekly outlook for gold based on this week's high-impact USD events"),
   xauusd: z.object({
     action: z.enum(["BUY", "SELL", "NEUTRAL"]),
-    confidence: z.number().min(50).max(95),
+    confidence: z.number().describe("50-95"),
     reasoning: z.string().describe("1-2 sentences"),
     entry: z.number().nullable(),
     stopLoss: z.number().nullable(),
