@@ -1,12 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ArrowUpRight, ChartCandlestick, ChevronDown, History, Menu, Newspaper, Users, Zap } from "lucide-react";
+import { ChartCandlestick, ChevronDown, History, Menu, Newspaper, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const pages = [
   { to: "/", label: "Signals & news", icon: Newspaper },
   { to: "/desk", label: "Gold signal desk", icon: ChartCandlestick },
-  { to: "/community", label: "Community", icon: Users },
   { to: "/history", label: "Performance history", icon: History },
 ] as const;
 
@@ -30,8 +29,6 @@ export function SiteNav() {
                   <Link to={to} aria-current={pathname === to ? "page" : undefined} className={pathname === to ? "bg-accent text-accent-foreground" : "text-muted-foreground"}><Icon /><span>{label}</span>{pathname === to && <Zap className="ml-auto text-bull" />}</Link>
                 </DropdownMenuItem>
               ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild className="p-3"><Link to="/auth">Sign in<ArrowUpRight className="ml-auto" /></Link></DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
