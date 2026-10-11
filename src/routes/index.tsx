@@ -140,6 +140,7 @@ function AiSection() {
   const refresh = useServerFn(getAiAnalysis);
   const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const [showAllCalls, setShowAllCalls] = useState(false);
   const a = data.analysis;
 
   async function regenerate() {
