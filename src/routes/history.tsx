@@ -66,7 +66,7 @@ function HistoryPage() {
         <div className="mt-12 overflow-x-auto rounded-2xl border">
           <div className="min-w-[780px]">
           <div className="grid grid-cols-[150px_90px_80px_1fr_110px_90px_90px_80px] gap-4 border-b px-6 py-3 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-            <span>Time (UTC)</span><span>Asset</span><span>Signal</span><span>Triggered by</span><span>Entry</span><span>1h</span><span>4h</span><span>Result</span>
+            <span>Time (New York)</span><span>Asset</span><span>Signal</span><span>Triggered by</span><span>Entry</span><span>1h</span><span>4h</span><span>Result</span>
           </div>
           {rows.length === 0 && (
             <p className="px-6 py-14 text-center text-sm text-muted-foreground">No signals yet. They appear here once an actual figure is entered for a released red-news event.</p>
@@ -77,7 +77,7 @@ function HistoryPage() {
             const d = new Date(r.created_at);
             return (
               <div key={r.id} className="grid grid-cols-[150px_90px_80px_1fr_110px_90px_90px_80px] items-center gap-4 border-b px-6 py-4 text-sm last:border-0">
-                <span className="font-mono text-muted-foreground">{d.toISOString().slice(5, 16).replace("T", " ")}</span>
+                <span className="font-mono text-muted-foreground">{d.toLocaleString("en-GB", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/New_York" })}</span>
                 <span className="font-mono">{r.asset}</span>
                 <span className={`font-bold ${r.action === "BUY" ? "text-bull" : r.action === "SELL" ? "text-bear" : "text-muted-foreground"}`}>{r.action} <span className="font-mono text-xs font-normal text-muted-foreground">{r.confidence}%</span></span>
                 <span className="truncate">{r.trigger_title}</span>
