@@ -167,29 +167,43 @@ function AiSection() {
             <div>
               <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Pre-release calls · before the news drops</p>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {a.events.filter((ev) => "signal" in ev).map((ev, i) => {
-                  const c = ev.signal === "BUY" ? "text-bull" : ev.signal === "SELL" ? "text-bear" : "text-muted-foreground";
-                  return (
-                    <div key={i} className="rounded-2xl border bg-card p-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-medium">{ev.title}</p>
-                          <p className="mt-1 font-mono text-xs text-muted-foreground">{ev.time ? new Date(ev.time).toLocaleString("en-GB", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/New_York" }) + " New York" : "—"} · {ev.released ? "released" : "upcoming"}</p>
+                {(() => {
+                  const all = a.events.filter((ev) => "signal" in ev);
+                  const shown = showAllCalls ? all : all.slice(0, 4);
+                  return shown.map((ev, i) => {
+                    const c = ev.signal === "BUY" ? "text-bull" : ev.signal === "SELL" ? "text-bear" : "text-muted-foreground";
+                    return (
+                      <div key={i} className="rounded-2xl border bg-card p-5">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-medium">{ev.title}</p>
+                            <p className="mt-1 font-mono text-xs text-muted-foreground">{ev.time ? new Date(ev.time).toLocaleString("en-GB", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/New_York" }) + " New York" : "—"} · {ev.released ? "released" : "upcoming"}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className={`text-2xl font-bold ${c}`}>{ev.signal}</p>
+                            <p className="font-mono text-xs text-muted-foreground">{ev.confidence}% · {ev.bias}</p>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className={`text-2xl font-bold ${c}`}>{ev.signal}</p>
-                          <p className="font-mono text-xs text-muted-foreground">{ev.confidence}% · {ev.bias}</p>
+                        <p className="mt-3 text-sm text-muted-foreground">{ev.note}</p>
+                        <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-3 text-xs">
+                          <p><span className="font-mono uppercase tracking-widest text-muted-foreground">If beats</span><br />{ev.ifBeat}</p>
+                          <p><span className="font-mono uppercase tracking-widest text-muted-foreground">If misses</span><br />{ev.ifMiss}</p>
                         </div>
                       </div>
-                      <p className="mt-3 text-sm text-muted-foreground">{ev.note}</p>
-                      <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-3 text-xs">
-                        <p><span className="font-mono uppercase tracking-widest text-muted-foreground">If beats</span><br />{ev.ifBeat}</p>
-                        <p><span className="font-mono uppercase tracking-widest text-muted-foreground">If misses</span><br />{ev.ifMiss}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
+              {a.events.filter((ev) => "signal" in ev).length > 4 && (
+                <button
+                  onClick={() => setShowAllCalls((v) => !v)}
+                  className="mt-4 w-full rounded-lg border px-4 py-3 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground sm:w-auto"
+                >
+                  {showAllCalls
+                    ? "↑ Show less"
+                    : `↓ Show ${a.events.filter((ev) => "signal" in ev).length - 4} more news`}
+                </button>
+              )}
             </div>
           )}
           <div className="flex items-center justify-between">
