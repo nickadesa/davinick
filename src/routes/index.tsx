@@ -83,7 +83,7 @@ function Index() {
         <AiSection />
 
         <section id="news" className="mt-24 scroll-mt-24">
-          <Heading k="02" title="This week's red news" sub="USD high-impact events. Click a released event to see why it moves the market." />
+          <Heading k="02" title="This week's red news" sub="USD high-impact events, New York time (UTC-4). Click a released event to see why it moves the market." />
           {data.error && <p className="mb-4 text-sm text-bear">{data.error}</p>}
           <div className="divide-y rounded-2xl border">
             {events.length === 0 && <p className="px-6 py-14 text-center text-sm text-muted-foreground">No red-folder USD events this week.</p>}
@@ -173,7 +173,7 @@ function AiSection() {
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="font-medium">{ev.title}</p>
-                          <p className="mt-1 font-mono text-xs text-muted-foreground">{ev.time?.slice(0, 16).replace("T", " ")} · {ev.released ? "released" : "upcoming"}</p>
+                          <p className="mt-1 font-mono text-xs text-muted-foreground">{ev.time ? new Date(ev.time).toLocaleString("en-GB", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/New_York" }) + " New York" : "—"} · {ev.released ? "released" : "upcoming"}</p>
                         </div>
                         <div className="text-right">
                           <p className={`text-2xl font-bold ${c}`}>{ev.signal}</p>
@@ -193,7 +193,7 @@ function AiSection() {
           )}
           <div className="flex items-center justify-between">
             <p className="font-mono text-xs text-muted-foreground">
-              Generated {new Date(a.generatedAt).toLocaleString("en-GB", { timeZone: "UTC" })} UTC
+              Generated {new Date(a.generatedAt).toLocaleString("en-GB", { timeZone: "America/New_York" })} New York
             </p>
             <button onClick={regenerate} disabled={busy}
               className="rounded-lg border px-4 py-2 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground disabled:opacity-50">
@@ -286,8 +286,8 @@ function BiasChip({ e, asset }: { e: NewsEvent; asset: Asset }) {
 
 function NewsRow({ e, now, open, onToggle }: { e: NewsEvent; now: Date | null; open: boolean; onToggle: () => void }) {
   const t = new Date(e.time);
-  const day = t.toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" });
-  const time = `${String(t.getUTCHours()).padStart(2, "0")}:${String(t.getUTCMinutes()).padStart(2, "0")}`;
+  const day = t.toLocaleDateString("en-GB", { weekday: "short", timeZone: "America/New_York" });
+  const time = t.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/New_York" });
   const released = now ? t <= now : false;
   return (
     <div className={released ? "" : "opacity-90"}>
