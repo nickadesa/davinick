@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { computeSignal, type Asset } from "./signals";
-import { currentPrice, goldCandles, loadCalendar, priceAt, PRICE_SYMBOLS, publicDb } from "./market.server";
+import { currentPrice, goldCandles, recordSignal, loadCalendar, priceAt, PRICE_SYMBOLS, publicDb } from "./market.server";
 import { runAiAnalysis, type AiAnalysis } from "./ai.server";
 
 export const getCalendar = createServerFn({ method: "GET" }).handler(async () => {
@@ -32,20 +32,7 @@ export const saveActual = createServerFn({ method: "POST" })
     });
     if (error) { console.error(error); return { ok: false, error: "Couldn't save" }; }
 
-    // Record the new gold signal, based on red news released in the last 24h.
-    const since = Date.now() - 24 * 3600 * 1000;
-    const recent = events
-      .map((e) => (e.id === ev.id ? { ...e, actual: data.actual } : e))
-      .filter((e) => new Date(e.time).getTime() >= since && new Date(e.time) <= new Date());
-    const rows = await Promise.all(
-      (["XAUUSD"] as Asset[]).map(async (asset) => {
-        const s = computeSignal(recent, asset);
-        let entry: number | null = null;
-        try { entry = await currentPrice(PRICE_SYMBOLS[asset]); } catch (e) { console.error(e); }
-        return { asset, action: s.action, confidence: s.confidence, trigger_title: ev.title, entry_price: entry };
-      }),
-    );
-    await supabaseAdmin.from("signal_history").insert(rows);
+    await recordSignal(events.map((e) => (e.id === ev.id ? { ...e, actual: data.actual } : e)), ev.title);
     return { ok: true, error: null as string | null };
   });
 
