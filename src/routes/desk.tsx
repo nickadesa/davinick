@@ -4,8 +4,16 @@ import { useMemo, useState } from "react";
 import { getCandles } from "@/lib/market.functions";
 import { fibLevels, lotSize, type Candle } from "@/lib/signals";
 import { SiteNav } from "@/components/SiteNav";
+import { KillzoneRadar } from "@/components/KillzoneRadar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Check, ChevronDown, Clock } from "lucide-react";
 
 type Interval = "15min" | "1h" | "4h";
+const LABELS: Record<Interval, { short: string; long: string }> = {
+  "15min": { short: "15M", long: "15 minutes" },
+  "1h": { short: "1H", long: "1 hour" },
+  "4h": { short: "4H", long: "4 hours" },
+};
 const candlesQuery = (interval: Interval) =>
   queryOptions({ queryKey: ["candles", interval], queryFn: () => getCandles({ data: { interval } }), staleTime: 5 * 60e3 });
 
@@ -56,14 +64,21 @@ function Desk() {
               <p className="font-mono text-xs tracking-widest text-muted-foreground">XAUUSD · GOLD SPOT</p>
               <p className="mt-2 font-mono text-4xl sm:text-5xl">{last?.toFixed(2) ?? "—"}</p>
             </div>
-            <div className="flex gap-1 rounded-full border p-1 font-mono text-xs">
-              {(["15min", "1h", "4h"] as Interval[]).map((i) => (
-                <button key={i} onClick={() => setInterval(i)}
-                  className={`rounded-full px-4 py-1.5 ${i === interval ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-                  {i.replace("min", "m").toUpperCase()}
-                </button>
-              ))}
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-2 self-start rounded-full border bg-card/60 px-4 py-2 font-mono text-xs backdrop-blur-xl transition-transform duration-100 active:scale-[0.97] sm:self-auto">
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                {LABELS[interval].short}
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 rounded-2xl bg-popover/90 backdrop-blur-xl">
+                {(Object.keys(LABELS) as Interval[]).map((i) => (
+                  <DropdownMenuItem key={i} onSelect={() => setInterval(i)} className="flex justify-between rounded-xl font-mono text-xs">
+                    <span>{LABELS[i].short} <span className="text-muted-foreground">· {LABELS[i].long}</span></span>
+                    {i === interval && <Check className="h-3.5 w-3.5 text-gold" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 {data?.error && <p className="mt-6 text-sm text-bear">{data.error}</p>}
           {candles.length > 0 && sw ? <Chart candles={candles} sw={sw} /> : <div className="mt-8 h-[260px] animate-pulse rounded-2xl bg-muted/30 sm:h-[420px]" />}
@@ -77,6 +92,7 @@ function Desk() {
           )}
         </div>
 
+        <KillzoneRadar />
         <Playbook />
         <Calculator price={last ?? null} />
 
