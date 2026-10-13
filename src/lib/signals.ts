@@ -108,3 +108,16 @@ export function tradePnl(direction: "BUY" | "SELL", entry: number, exit: number,
 }
 
 export interface Candle { t: string; o: number; h: number; l: number; c: number }
+
+export type AiStage = "24h" | "15m" | null;
+
+/** Decide whether the AI analysis must be regenerated: once 24h before the next red-news event, and again 15 min before it. */
+export function aiRefreshPlan(eventTimes: string[], cachedAt: number | null, now: number): { refresh: boolean; stage: AiStage } {
+  const next = eventTimes.map((t) => new Date(t).getTime()).filter((t) => t > now).sort((a, b) => a - b)[0];
+  if (cachedAt === null) return { refresh: true, stage: next && next - now <= 15 * 60e3 ? "15m" : next && next - now <= 24 * 3600e3 ? "24h" : null };
+  if (!next) return { refresh: false, stage: null };
+  const left = next - now;
+  if (left <= 15 * 60e3) return { refresh: cachedAt < next - 15 * 60e3, stage: "15m" };
+  if (left <= 24 * 3600e3) return { refresh: cachedAt < next - 24 * 3600e3, stage: "24h" };
+  return { refresh: false, stage: null };
+}
