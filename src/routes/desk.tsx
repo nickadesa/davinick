@@ -92,6 +92,7 @@ function Desk() {
           )}
         </div>
 
+        <KillzoneRadar />
         <Playbook />
         <Calculator price={last ?? null} />
 
