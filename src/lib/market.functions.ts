@@ -36,24 +36,25 @@ export const saveActual = createServerFn({ method: "POST" })
     return { ok: true, error: null as string | null };
   });
 
-/** AI-generated analysis of this week's red news, cached for 6 hours. Pass refresh=true to regenerate. */
+/** AI analysis of red news. Auto-regenerates twice per event: 24h before and 15 min before release. refresh=true forces it. */
 export const getAiAnalysis = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ refresh: z.boolean().optional() }).parse(d ?? {}))
-  .handler(async ({ data }): Promise<{ analysis: AiAnalysis | null; error: string | null }> => {
+  .handler(async ({ data }): Promise<{ analysis: AiAnalysis | null; error: string | null; stage: AiStage }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let stage: AiStage = null;
     try {
-      if (!data?.refresh) {
-        const { data: cached } = await supabaseAdmin.from("ai_analysis").select("payload, created_at").eq("id", 1).maybeSingle();
-        if (cached && Date.now() - new Date(cached.created_at).getTime() < 6 * 3600e3) {
-          return { analysis: cached.payload as unknown as AiAnalysis, error: null };
-        }
-      }
       const events = await loadCalendar();
+      const { data: cached } = await supabaseAdmin.from("ai_analysis").select("payload, created_at").eq("id", 1).maybeSingle();
+      const plan = aiRefreshPlan(events.map((e) => e.time), cached ? new Date(cached.created_at).getTime() : null, Date.now());
+      stage = plan.stage;
+      if (!data?.refresh && !plan.refresh && cached) {
+        return { analysis: cached.payload as unknown as AiAnalysis, error: null, stage };
+      }
       let xauusd: number | null = null;
       try { xauusd = await currentPrice(PRICE_SYMBOLS.XAUUSD); } catch (e) { console.error(e); }
       const analysis = await runAiAnalysis(events, { xauusd });
       await supabaseAdmin.from("ai_analysis").upsert({ id: 1, payload: analysis as never, created_at: new Date().toISOString() });
-      return { analysis, error: null };
+      return { analysis, error: null, stage };
     } catch (e) {
       console.error(e);
       const { data: cached } = await supabaseAdmin.from("ai_analysis").select("payload").eq("id", 1).maybeSingle();
