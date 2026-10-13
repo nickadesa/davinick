@@ -13,7 +13,7 @@
 - Signal scoring lives in `src/lib/signals.ts` as pure functions (tested in `signals.test.ts`) — keeps analysis logic independent of the UI and the future news data source.
 - News events come from the free Forex Factory weekly feed (`src/lib/market.server.ts`); actuals are auto-filled from FRED (`src/lib/fred.ts` maps titles to series, needs `FRED_API_KEY`) and saved to `event_actuals`, with passcode manual entry as fallback — the free feed has no actuals.
 - Signal history rows are written server-side when an actual is saved; 1h/4h follow-up prices are filled lazily on history page load (Twelve Data, gold only) — avoids a cron job and stays within free API limits.
-- AI analysis lives in `src/lib/ai.server.ts` (Lovable AI Gateway, `openai/gpt-6-astra` via Responses, structured output); results are cached in the `ai_analysis` singleton row for 6h and regenerated on demand via `getAiAnalysis({ refresh: true })`.
+- AI analysis lives in `src/lib/ai.server.ts` (Lovable AI Gateway, structured output), stored in the `ai_analysis` singleton row; it auto-regenerates 24h and 15min before the next red-news event (`aiRefreshPlan` in `signals.ts`) and the home page polls every minute — avoids AI calls on days without news.
 - The site is gold (XAUUSD) only; Nasdaq was removed at the user's request. Old NASDAQ rows in `signal_history` are filtered out, not deleted.
 - Desk chart is a hand-drawn SVG candlestick (no chart library) so it renders during SSR; fib/lot-size/PnL maths are pure functions in `signals.ts`.
 - All content pages share `SiteNav` with a Radix dropdown and pathname-based active links — keeps navigation consistent and keyboard-accessible on desktop and mobile.

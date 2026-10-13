@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { computeSignal, type Asset } from "./signals";
+import { computeSignal, aiRefreshPlan, type Asset, type AiStage } from "./signals";
 import { currentPrice, goldCandles, recordSignal, loadCalendar, priceAt, PRICE_SYMBOLS, publicDb } from "./market.server";
 import { runAiAnalysis, type AiAnalysis } from "./ai.server";
 
@@ -58,8 +58,8 @@ export const getAiAnalysis = createServerFn({ method: "GET" })
     } catch (e) {
       console.error(e);
       const { data: cached } = await supabaseAdmin.from("ai_analysis").select("payload").eq("id", 1).maybeSingle();
-      if (cached) return { analysis: cached.payload as unknown as AiAnalysis, error: null };
-      return { analysis: null, error: "AI analysis isn't available right now. Try again in a moment." };
+      if (cached) return { analysis: cached.payload as unknown as AiAnalysis, error: null, stage };
+      return { stage, analysis: null, error: "AI analysis isn't available right now. Try again in a moment." };
     }
   });
 

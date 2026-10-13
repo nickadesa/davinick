@@ -7,7 +7,7 @@ import { getAiAnalysis, getCalendar, saveActual } from "@/lib/market.functions";
 import { SiteNav } from "@/components/SiteNav";
 
 const calendarQuery = queryOptions({ queryKey: ["calendar"], queryFn: () => getCalendar(), staleTime: 60_000 });
-const aiQuery = queryOptions({ queryKey: ["ai-analysis"], queryFn: () => getAiAnalysis({ data: {} }), staleTime: 6 * 3600e3 });
+const aiQuery = queryOptions({ queryKey: ["ai-analysis"], queryFn: () => getAiAnalysis({ data: {} }), staleTime: 60_000, refetchInterval: 60_000 });
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -159,7 +159,14 @@ function AiSection() {
       ) : (
         <div className="space-y-5">
           <div className="rounded-2xl border bg-card p-5 sm:p-8">
-            <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Weekly outlook</p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Weekly outlook</p>
+              {data.stage && (
+                <span className="rounded-full border border-gold/40 px-3 py-1 font-mono text-xs uppercase tracking-widest text-gold">
+                  {data.stage === "15m" ? "⚡ Final 15m call" : "24h outlook"}
+                </span>
+              )}
+            </div>
             <p className="mt-3 max-w-3xl text-base leading-relaxed sm:text-lg">{a.outlook}</p>
           </div>
           <AiSignalCard label="XAUUSD" name="Gold Spot / USD" s={a.xauusd} />
