@@ -46,7 +46,6 @@ function Index() {
     () => data.events.map((e): NewsEvent => (e.id in what ? { ...e, actual: what[e.id] ?? null } : e)),
     [data.events, what],
   );
-  // Signal = red news released in the last 24 hours (plus any what-if values).
   const recent = useMemo(() => {
     if (!now) return [];
     const since = now.getTime() - 24 * 3600e3;
@@ -63,13 +62,13 @@ function Index() {
       </div>
       <SiteNav />
 
-      <main className="relative mx-auto max-w-6xl px-5 sm:px-10">
-        <section className="pt-16 pb-14 sm:pt-28 sm:pb-20">
-          <h1 className="animate-blur-in text-5xl font-bold leading-[0.95] tracking-[-0.04em] sm:text-7xl">
+      <main className="relative mx-auto max-w-6xl px-4 pb-8 sm:px-10">
+        <section className="pt-8 pb-8 sm:pt-28 sm:pb-20">
+          <h1 className="animate-blur-in text-4xl font-bold leading-[0.95] tracking-[-0.04em] sm:text-7xl">
             Read the news.<br /><span className="text-muted-foreground">Not the noise.</span>
           </h1>
-          <p className="mt-6 font-mono text-xs uppercase tracking-[0.25em] text-muted-foreground">XAUUSD · GOLD SPOT · RED FOLDER ONLY</p>
-          <p className="mt-8 max-w-lg text-lg text-muted-foreground animate-blur-in [animation-delay:200ms]">
+          <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:mt-6 sm:text-xs sm:tracking-[0.25em]">XAUUSD · GOLD SPOT · RED FOLDER ONLY</p>
+          <p className="mt-5 max-w-lg text-base text-muted-foreground animate-blur-in [animation-delay:200ms] sm:mt-8 sm:text-lg">
             Every high-impact release is scored against forecast and turned into a directional bias —
             with an honest confidence, never a guarantee.
           </p>
@@ -82,33 +81,33 @@ function Index() {
 
         <AiSection />
 
-        <section id="news" className="mt-24 scroll-mt-24">
+        <section id="news" className="mt-16 scroll-mt-24 sm:mt-24">
           <Heading k="02" title="This week's red news" sub="USD high-impact events, New York time (UTC-4). Click a released event to see why it moves the market." />
           {data.error && <p className="mb-4 text-sm text-bear">{data.error}</p>}
           <div className="divide-y rounded-2xl border">
-            {events.length === 0 && <p className="px-6 py-14 text-center text-sm text-muted-foreground">No red-folder USD events this week.</p>}
+            {events.length === 0 && <p className="px-4 py-10 text-center text-sm text-muted-foreground">No red-folder USD events this week.</p>}
             {events.map((e) => (
               <NewsRow key={e.id} e={data.events.find((x) => x.id === e.id)!} now={now} open={open === e.id} onToggle={() => setOpen(open === e.id ? null : e.id)} />
             ))}
           </div>
         </section>
 
-        <section id="lab" className="mt-24 scroll-mt-24">
+        <section id="lab" className="mt-16 scroll-mt-24 sm:mt-24">
           <Heading k="03" title="What-if lab" sub="Drag a number and watch the signals react. Nothing is saved." />
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            {labEvents.length === 0 && <p className="rounded-2xl border px-6 py-10 text-center text-sm text-muted-foreground sm:col-span-2">No upcoming red-news figures with a forecast to play with right now.</p>}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+            {labEvents.length === 0 && <p className="rounded-2xl border px-4 py-8 text-center text-sm text-muted-foreground sm:col-span-2">No upcoming red-news figures with a forecast to play with right now.</p>}
             {labEvents.map((e) => {
               const fc = e.forecast as number;
               const v = what[e.id] ?? e.actual ?? fc;
               const span = Math.max(Math.abs(fc) * 0.6, 0.3);
               return (
-                <div key={e.id} className="rounded-2xl border bg-card p-6">
+                <div key={e.id} className="rounded-2xl border bg-card p-5">
                   <div className="flex items-baseline justify-between">
                     <span className="font-medium">{e.title}</span>
-                    <span className="font-mono text-2xl">{fmt(v)}{e.unit}</span>
+                    <span className="font-mono text-xl sm:text-2xl">{fmt(v)}{e.unit}</span>
                   </div>
                   <input
-                    type="range" className="mt-5 w-full accent-gold"
+                    type="range" className="mt-4 w-full accent-gold"
                     min={fc - span} max={fc + span} step={span / 50} value={v}
                     onChange={(ev) => setWhat({ ...what, [e.id]: Number(ev.target.value) })}
                   />
@@ -127,7 +126,7 @@ function Index() {
           )}
         </section>
 
-        <footer className="mt-32 border-t py-10 text-xs text-muted-foreground">
+        <footer className="mt-20 border-t py-8 text-xs text-muted-foreground sm:mt-32 sm:py-10">
           Calendar from Forex Factory. Signals are educational analysis of economic news, not financial advice. Trading carries risk.
         </footer>
       </main>
@@ -151,14 +150,14 @@ function AiSection() {
   }
 
   return (
-    <section id="ai" className="mt-24 scroll-mt-24">
+    <section id="ai" className="mt-16 scroll-mt-24 sm:mt-24">
       <Heading k="AI" title="AI desk analysis" sub="The model reads this week's red news and writes the call — bias, confidence, and levels." />
       {data.error && <p className="mb-4 text-sm text-bear">{data.error}</p>}
       {!a ? (
-        <p className="rounded-2xl border px-6 py-14 text-center text-sm text-muted-foreground">No AI analysis yet.</p>
+        <p className="rounded-2xl border px-4 py-10 text-center text-sm text-muted-foreground">No AI analysis yet.</p>
       ) : (
-        <div className="space-y-5">
-          <div className="rounded-2xl border bg-card p-5 sm:p-8">
+        <div className="space-y-4 sm:space-y-5">
+          <div className="rounded-2xl border bg-card p-4 sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Weekly outlook</p>
               {data.stage && (
@@ -167,32 +166,32 @@ function AiSection() {
                 </span>
               )}
             </div>
-            <p className="mt-3 max-w-3xl text-base leading-relaxed sm:text-lg">{a.outlook}</p>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed sm:text-lg">{a.outlook}</p>
           </div>
           <AiSignalCard label="XAUUSD" name="Gold Spot / USD" s={a.xauusd} />
           {a.events.some((ev) => "signal" in ev) && (
             <div>
               <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Pre-release calls · before the news drops</p>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                 {(() => {
                   const all = a.events.filter((ev) => "signal" in ev);
                   const shown = showAllCalls ? all : all.slice(0, 4);
                   return shown.map((ev, i) => {
                     const c = ev.signal === "BUY" ? "text-bull" : ev.signal === "SELL" ? "text-bear" : "text-muted-foreground";
                     return (
-                      <div key={i} className="rounded-2xl border bg-card p-5">
+                      <div key={i} className="rounded-2xl border bg-card p-4 sm:p-5">
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="font-medium">{ev.title}</p>
                             <p className="mt-1 font-mono text-xs text-muted-foreground">{ev.time ? new Date(ev.time).toLocaleString("en-GB", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/New_York" }) + " New York" : "—"} · {ev.released ? "released" : "upcoming"}</p>
                           </div>
                           <div className="text-right">
-                            <p className={`text-2xl font-bold ${c}`}>{ev.signal}</p>
+                            <p className={`text-xl font-bold sm:text-2xl ${c}`}>{ev.signal}</p>
                             <p className="font-mono text-xs text-muted-foreground">{ev.confidence}% · {ev.bias}</p>
                           </div>
                         </div>
                         <p className="mt-3 text-sm text-muted-foreground">{ev.note}</p>
-                        <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-3 text-xs">
+                        <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3 text-xs">
                           <p><span className="font-mono uppercase tracking-widest text-muted-foreground">If beats</span><br />{ev.ifBeat}</p>
                           <p><span className="font-mono uppercase tracking-widest text-muted-foreground">If misses</span><br />{ev.ifMiss}</p>
                         </div>
@@ -204,7 +203,7 @@ function AiSection() {
               {a.events.filter((ev) => "signal" in ev).length > 4 && (
                 <button
                   onClick={() => setShowAllCalls((v) => !v)}
-                  className="mt-4 w-full rounded-lg border px-4 py-3 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground sm:w-auto"
+                  className="mt-3 w-full rounded-lg border px-4 py-2.5 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground sm:w-auto"
                 >
                   {showAllCalls
                     ? "↑ Show less"
@@ -218,7 +217,7 @@ function AiSection() {
               Generated {new Date(a.generatedAt).toLocaleString("en-GB", { timeZone: "America/New_York" })} New York
             </p>
             <button onClick={regenerate} disabled={busy}
-              className="rounded-lg border px-4 py-2 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground disabled:opacity-50">
+              className="rounded-lg border px-3 py-1.5 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground disabled:opacity-50 sm:px-4 sm:py-2">
               {busy ? "Analysing…" : "↺ Re-analyse"}
             </button>
           </div>
@@ -231,14 +230,14 @@ function AiSection() {
 function AiSignalCard({ label, name, s }: { label: string; name: string; s: { action: "BUY" | "SELL" | "NEUTRAL"; confidence: number; reasoning: string; entry: number | null; stopLoss: number | null; takeProfit: number | null } }) {
   const color = s.action === "BUY" ? "text-bull" : s.action === "SELL" ? "text-bear" : "text-muted-foreground";
   return (
-    <div className="rounded-3xl border bg-card p-5 transition-colors hover:border-gold/40 sm:p-8">
+    <div className="rounded-2xl border bg-card p-4 transition-colors hover:border-gold/40 sm:rounded-3xl sm:p-8">
       <p className="font-mono text-xs tracking-widest text-muted-foreground">{label}</p>
       <p className="mt-1 text-sm text-muted-foreground">{name}</p>
-      <div className="mt-6 flex items-baseline gap-4">
-        <p className={`text-4xl font-bold tracking-[-0.04em] sm:text-5xl ${color}`}>{s.action}</p>
-        <p className="font-mono text-xl text-muted-foreground">{s.confidence}%</p>
+      <div className="mt-4 flex items-baseline gap-3 sm:mt-6 sm:gap-4">
+        <p className={`text-3xl font-bold tracking-[-0.04em] sm:text-5xl ${color}`}>{s.action}</p>
+        <p className="font-mono text-lg text-muted-foreground sm:text-xl">{s.confidence}%</p>
       </div>
-      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{s.reasoning}</p>
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:mt-4">{s.reasoning}</p>
     </div>
   );
 }
@@ -249,10 +248,10 @@ function fmt(n: number) {
 
 function Heading({ k, title, sub }: { k: string; title: string; sub: string }) {
   return (
-    <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-6 flex flex-col gap-2 sm:mb-8 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
       <div>
         <p className="font-mono text-xs text-muted-foreground">{k}</p>
-        <h2 className="mt-2 text-3xl font-bold tracking-[-0.03em] sm:text-4xl">{title}</h2>
+        <h2 className="mt-1 text-2xl font-bold tracking-[-0.03em] sm:mt-2 sm:text-4xl">{title}</h2>
       </div>
       <p className="max-w-xs text-sm text-muted-foreground sm:text-right">{sub}</p>
     </div>
@@ -263,17 +262,17 @@ function SignalCard({ s, name }: { s: Signal; name: string }) {
   const color = s.action === "BUY" ? "text-bull" : s.action === "SELL" ? "text-bear" : "text-muted-foreground";
   const r = 54, c = 2 * Math.PI * r;
   return (
-    <div className="group rounded-3xl border bg-card p-5 transition-colors hover:border-gold/40 sm:p-8">
-      <div className="flex items-start justify-between gap-4">
+    <div className="group rounded-2xl border bg-card p-4 transition-colors hover:border-gold/40 sm:rounded-3xl sm:p-8">
+      <div className="flex items-start justify-between gap-3 sm:gap-4">
         <div>
           <p className="font-mono text-xs tracking-widest text-muted-foreground">XAUUSD</p>
           <p className="mt-1 text-sm text-muted-foreground">{name}</p>
-          <p key={s.action} className={`mt-6 animate-blur-in text-5xl font-bold tracking-[-0.04em] sm:mt-8 sm:text-7xl ${color}`}>{s.action}</p>
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p key={s.action} className={`mt-4 animate-blur-in text-4xl font-bold tracking-[-0.04em] sm:mt-8 sm:text-7xl ${color}`}>{s.action}</p>
+          <p className="mt-2 text-sm text-muted-foreground sm:mt-3">
             {s.drivers ? `Based on ${s.drivers} red-news release${s.drivers === 1 ? "" : "s"} in the last 24h` : "No released red news in the last 24h"}
           </p>
         </div>
-        <div className="relative size-24 shrink-0 sm:size-36">
+        <div className="relative size-20 shrink-0 sm:size-36">
           <svg viewBox="0 0 128 128" className="size-full -rotate-90">
             <circle cx="64" cy="64" r={r} fill="none" stroke="var(--muted)" strokeWidth="8" />
             <circle
@@ -283,8 +282,8 @@ function SignalCard({ s, name }: { s: Signal; name: string }) {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-xl sm:text-3xl">{s.confidence}%</span>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">confidence</span>
+            <span className="font-mono text-lg sm:text-3xl">{s.confidence}%</span>
+            <span className="text-[9px] uppercase tracking-widest text-muted-foreground sm:text-[10px]">confidence</span>
           </div>
         </div>
       </div>
@@ -306,14 +305,14 @@ function NewsRow({ e, now, open, onToggle }: { e: NewsEvent; now: Date | null; o
   const released = now ? t <= now : false;
   return (
     <div className={released ? "" : "opacity-90"}>
-      <button onClick={onToggle} className="grid w-full grid-cols-[64px_1fr] items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-faint sm:grid-cols-[110px_1fr_150px_140px] sm:gap-4 sm:px-6 sm:py-5">
-        <span className="font-mono text-xs text-muted-foreground sm:text-sm">{day} {time}</span>
-        <span className="flex items-center gap-2 sm:gap-3">
-          <span className="size-2.5 shrink-0 rounded-sm bg-bear" />
-          <span className="font-medium">{e.title}</span>
+      <button onClick={onToggle} className="grid w-full grid-cols-[56px_1fr] items-center gap-2 px-3 py-3 text-left transition-colors hover:bg-faint sm:grid-cols-[110px_1fr_150px_140px] sm:gap-4 sm:px-6 sm:py-5">
+        <span className="font-mono text-[11px] text-muted-foreground sm:text-sm">{day} {time}</span>
+        <span className="flex items-center gap-2">
+          <span className="size-2 shrink-0 rounded-sm bg-bear sm:size-2.5" />
+          <span className="text-sm font-medium sm:text-base">{e.title}</span>
           <span className="hidden font-mono text-xs text-muted-foreground sm:inline">{e.currency}</span>
         </span>
-        <span className="col-span-2 pl-4 font-mono text-sm sm:col-span-1 sm:pl-0">
+        <span className="col-span-2 pl-3 font-mono text-xs sm:col-span-1 sm:pl-0 sm:text-sm">
           {e.forecast === null ? <span className="text-muted-foreground">speech / no forecast</span> : (
             <>
               <span className={e.actual === null ? "text-muted-foreground" : ""}>{e.actual ?? "—"}{e.actual !== null && e.unit}</span>
@@ -321,10 +320,10 @@ function NewsRow({ e, now, open, onToggle }: { e: NewsEvent; now: Date | null; o
             </>
           )}
         </span>
-        <span className="col-span-2 pl-4 sm:col-span-1 sm:pl-0">Gold <BiasChip e={e} asset="XAUUSD" /></span>
+        <span className="col-span-2 pl-3 text-xs sm:col-span-1 sm:pl-0 sm:text-sm">Gold <BiasChip e={e} asset="XAUUSD" /></span>
       </button>
       {open && (
-        <div className="animate-blur-in space-y-4 px-4 pb-6 text-sm text-muted-foreground sm:px-6 sm:pl-[134px]">
+        <div className="animate-blur-in space-y-3 px-3 pb-4 text-sm text-muted-foreground sm:px-6 sm:pb-6 sm:pl-[134px]">
           <p>{e.note}{e.previous !== null && <span className="font-mono text-xs"> · previous {e.previous}{e.unit}</span>}</p>
         </div>
       )}
@@ -341,7 +340,7 @@ function NextNews({ events, now }: { events: NewsEvent[]; now: Date | null }) {
   const m = Math.floor((diff % 3600e3) / 60e3);
   const s = Math.floor((diff % 60e3) / 1000);
   return (
-    <div className="mt-10 flex items-center gap-4 font-mono text-sm">
+    <div className="mt-6 flex flex-wrap items-center gap-2 font-mono text-xs sm:mt-10 sm:gap-4 sm:text-sm">
       <span className="text-muted-foreground">Next red news</span>
       <span className="text-gold">{next.title}</span>
       <span>{String(h).padStart(2, "0")}:{String(m).padStart(2, "0")}:{String(s).padStart(2, "0")}</span>
