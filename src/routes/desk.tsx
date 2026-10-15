@@ -2,192 +2,127 @@ import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { getCandles } from "@/lib/market.functions";
-import { fibLevels, lotSize, type Candle } from "@/lib/signals";
+import type { Candle } from "@/lib/signals";
 import { SiteNav } from "@/components/SiteNav";
 import { KillzoneRadar } from "@/components/KillzoneRadar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Check, ChevronDown, Clock } from "lucide-react";
 
-type Interval = "15min" | "1h" | "4h";
-const LABELS: Record<Interval, { short: string; long: string }> = {
-  "15min": { short: "15M", long: "15 minutes" },
-  "1h": { short: "1H", long: "1 hour" },
-  "4h": { short: "4H", long: "4 hours" },
-};
-const candlesQuery = (interval: Interval) =>
-  queryOptions({ queryKey: ["candles", interval], queryFn: () => getCandles({ data: { interval } }), staleTime: 5 * 60e3 });
+type Symbol = "XAUUSD" | "NQ" | "ES";
+type Timeframe = "1D" | "1W" | "1M" | "3M" | "1Y" | "ALL";
+
+const SYMBOLS: { id: Symbol; label: string }[] = [
+  { id: "XAUUSD", label: "Gold" },
+  { id: "NQ", label: "NQ" },
+  { id: "ES", label: "ES" },
+];
+
+const TIMEFRAMES: Timeframe[] = ["1D", "1W", "1M", "3M", "1Y", "ALL"];
+
+const candlesQuery = (symbol: Symbol, timeframe: Timeframe) =>
+  queryOptions({
+    queryKey: ["candles", symbol, timeframe],
+    queryFn: () => getCandles({ data: { symbol, timeframe } }),
+    staleTime: 60_000,
+  });
 
 export const Route = createFileRoute("/desk")({
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Gold signal desk — TOPTIERclub" },
-      { name: "description", content: "Live XAUUSD chart with automatic 61.8% and 78.6% Fibonacci zones, a news-trading playbook and a lot size calculator." },
-      { property: "og:title", content: "Gold signal desk — TOPTIERclub" },
-      { property: "og:description", content: "Gold chart, fib zones, strategy and risk calculator in one place." },
+      { title: "Chart — TOPTIERclub" },
+      { name: "description", content: "Live XAUUSD, NQ and ES line charts." },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(candlesQuery("1h")),
+  loader: ({ context }) => context.queryClient.ensureQueryData(candlesQuery("XAUUSD", "1D")),
   errorComponent: () => <div className="p-20 text-center text-muted-foreground">The desk couldn't load. Try again shortly.</div>,
-  notFoundComponent: () => <div className="p-20 text-center text-muted-foreground">Not found</div>,
   component: Desk,
 });
 
-function swing(c: Candle[]) {
-  let hi = 0, lo = 0;
-  c.forEach((x, i) => { if (x.h > c[hi]!.h) hi = i; if (x.l < c[lo]!.l) lo = i; });
-  const high = c[hi]!.h, low = c[lo]!.l;
-  const trend: "up" | "down" = lo < hi ? "up" : "down";
-  return { high, low, trend, ...fibLevels(high, low, trend) };
-}
-
 function Desk() {
-  const [interval, setInterval] = useState<Interval>("1h");
-  const { data } = useQuery(candlesQuery(interval));
+  const [symbol, setSymbol] = useState<Symbol>("XAUUSD");
+  const [tf, setTf] = useState<Timeframe>("1D");
+  const { data } = useQuery(candlesQuery(symbol, tf));
   const candles = data?.candles ?? [];
-  const sw = useMemo(() => (candles.length ? swing(candles) : null), [candles]);
   const last = candles.at(-1)?.c;
+  const first = candles[0]?.c;
+  const change = last != null && first != null ? last - first : null;
+  const changePct = change != null && first ? (change / first) * 100 : null;
+  const up = (change ?? 0) >= 0;
 
   return (
     <div className="min-h-screen">
       <SiteNav />
-      <main className="mx-auto max-w-6xl px-5 pb-24 sm:px-10">
-        <section className="pt-16 pb-10 sm:pt-24 sm:pb-12">
-          <h1 className="animate-blur-in text-4xl font-bold tracking-[-0.04em] sm:text-6xl">Signal desk.<br /><span className="text-muted-foreground">Gold, measured.</span></h1>
-          <p className="mt-6 max-w-lg text-muted-foreground">Live XAUUSD with the golden-zone retracements drawn for you. News gives the direction, fib gives the entry.</p>
+      <main className="mx-auto max-w-3xl px-5 pb-32 sm:px-8">
+        <section className="pt-12 pb-6 sm:pt-16">
+          <div className="flex gap-2">
+            {SYMBOLS.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setSymbol(s.id)}
+                className={`rounded-full px-4 py-1.5 font-mono text-xs uppercase tracking-widest transition-colors ${
+                  symbol === s.id ? "bg-gold text-black" : "border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-8 font-mono text-5xl sm:text-6xl">{last?.toFixed(2) ?? "—"}</p>
+          {change != null && changePct != null && (
+            <p className={`mt-2 font-mono text-sm ${up ? "text-bull" : "text-bear"}`}>
+              {up ? "▲" : "▼"} {change.toFixed(2)} ({changePct.toFixed(2)}%)
+            </p>
+          )}
         </section>
 
-        <div className="rounded-3xl border bg-card p-5 sm:p-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="font-mono text-xs tracking-widest text-muted-foreground">XAUUSD · GOLD SPOT</p>
-              <p className="mt-2 font-mono text-4xl sm:text-5xl">{last?.toFixed(2) ?? "—"}</p>
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 self-start rounded-full border bg-card/60 px-4 py-2 font-mono text-xs backdrop-blur-xl transition-transform duration-100 active:scale-[0.97] sm:self-auto">
-                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                {LABELS[interval].short}
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 rounded-2xl bg-popover/90 backdrop-blur-xl">
-                {(Object.keys(LABELS) as Interval[]).map((i) => (
-                  <DropdownMenuItem key={i} onSelect={() => setInterval(i)} className="flex justify-between rounded-xl font-mono text-xs">
-                    <span>{LABELS[i].short} <span className="text-muted-foreground">· {LABELS[i].long}</span></span>
-                    {i === interval && <Check className="h-3.5 w-3.5 text-gold" />}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-{data?.error && <p className="mt-6 text-sm text-bear">{data.error}</p>}
-          {candles.length > 0 && sw ? <Chart candles={candles} sw={sw} /> : <div className="mt-8 h-[260px] animate-pulse rounded-2xl bg-muted/30 sm:h-[420px]" />}
-          {sw && (
-            <div className="mt-6 grid grid-cols-2 gap-4 border-t pt-6 font-mono text-sm sm:grid-cols-4">
-              <Stat k="Swing" v={sw.trend === "up" ? "▲ Up-swing" : "▼ Down-swing"} tone={sw.trend === "up" ? "text-bull" : "text-bear"} />
-              <Stat k="Fib 61.8%" v={sw.f618.toFixed(2)} tone="text-gold" />
-              <Stat k="Fib 78.6%" v={sw.f786.toFixed(2)} tone="text-gold" />
-              <Stat k="Golden zone" v={sw.trend === "up" ? "Look for buys" : "Look for sells"} />
-            </div>
-          )}
+        {data?.error && <p className="mb-4 text-sm text-bear">{data.error}</p>}
+        {candles.length > 0 ? (
+          <LineChart candles={candles} up={up} />
+        ) : (
+          <div className="h-64 animate-pulse rounded-2xl bg-muted/30 sm:h-80" />
+        )}
+
+        <div className="mt-6 flex justify-between gap-1">
+          {TIMEFRAMES.map((t) => (
+            <button
+              key={t}
+              onClick={() => setTf(t)}
+              className={`flex-1 rounded-full py-2 font-mono text-xs uppercase tracking-widest transition-colors ${
+                tf === t ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
         </div>
 
         <KillzoneRadar />
-        <Playbook />
-        <Calculator price={last ?? null} />
-
-        <p className="mt-16 border-t pt-8 text-xs text-muted-foreground">Prices from Twelve Data. Fib levels are drawn from the highest high and lowest low on screen. Educational only, not financial advice.</p>
       </main>
     </div>
   );
 }
 
-function Stat({ k, v, tone = "" }: { k: string; v: string; tone?: string }) {
-  return <div><p className="text-[10px] uppercase tracking-widest text-muted-foreground">{k}</p><p className={`mt-1 ${tone}`}>{v}</p></div>;
-}
+function LineChart({ candles, up }: { candles: Candle[]; up: boolean }) {
+  const W = 800, H = 320, pad = 12;
+  const prices = candles.map((c) => c.c);
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const range = max - min || 1;
+  const y = (p: number) => pad + ((max - p) / range) * (H - pad * 2);
+  const step = (W - pad * 2) / Math.max(1, candles.length - 1);
+  const points = candles.map((c, i) => `${pad + i * step},${y(c.c)}`).join(" ");
+  const color = up ? "#22c55e" : "#ef4444";
 
-function Chart({ candles, sw }: { candles: Candle[]; sw: ReturnType<typeof swing> }) {
-  const W = 1000, H = 420, pad = 8;
-  const min = sw.low - (sw.high - sw.low) * 0.05, max = sw.high + (sw.high - sw.low) * 0.05;
-  const y = (p: number) => pad + ((max - p) / (max - min)) * (H - pad * 2);
-  const step = W / candles.length;
-  const zoneTop = y(Math.max(sw.f618, sw.f786)), zoneBot = y(Math.min(sw.f618, sw.f786));
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="mt-8 h-[260px] w-full sm:h-[420px]" preserveAspectRatio="none">
-      <rect x={0} y={zoneTop} width={W} height={zoneBot - zoneTop} className="fill-gold/10" />
-      {[{ p: sw.f618, l: "61.8%" }, { p: sw.f786, l: "78.6%" }].map((f) => (
-        <g key={f.l}>
-          <line x1={0} x2={W} y1={y(f.p)} y2={y(f.p)} className="stroke-gold" strokeDasharray="6 6" strokeWidth={1} vectorEffect="non-scaling-stroke" />
-          <text x={W - 6} y={y(f.p) - 6} textAnchor="end" className="fill-gold font-mono text-[11px]">{f.l} · {f.p.toFixed(2)}</text>
-        </g>
-      ))}
-      {candles.map((c, i) => {
-        const up = c.c >= c.o, x = i * step + step / 2;
-        return (
-          <g key={c.t} className={up ? "text-bull" : "text-bear"}>
-            <line x1={x} x2={x} y1={y(c.h)} y2={y(c.l)} stroke="currentColor" strokeWidth={1} vectorEffect="non-scaling-stroke" />
-            <rect x={x - step * 0.35} width={step * 0.7} y={y(Math.max(c.o, c.c))} height={Math.max(1, Math.abs(y(c.o) - y(c.c)))} fill="currentColor" />
-          </g>
-        );
-      })}
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-64 w-full sm:h-80" preserveAspectRatio="none">
+      <polyline
+        fill="none"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        points={points}
+      />
     </svg>
-  );
-}
-
-const steps = [
-  { t: "Read the red box", d: "Check this week's high-impact USD news on the home page. Weak US data or a dovish Fed is gold-positive; hot inflation or strong jobs is gold-negative." },
-  { t: "Wait for the release", d: "Don't trade the first spike. Let the first 5–15 minutes settle — spreads widen and price often fakes out." },
-  { t: "Find the swing", d: "After the move, mark the impulse high and low. The desk chart does this automatically." },
-  { t: "Enter in the golden zone", d: "Place limit entries between the 61.8% and 78.6% retracement, in the direction of the news bias." },
-  { t: "Protect and target", d: "Stop just beyond the 100% level (the swing origin). First target at the swing extreme, aim for at least 1:2 risk-reward." },
-  { t: "Size it right", d: "Risk 0.5–1% of your account per trade. Use the calculator below so the stop decides your lot size, not your feelings." },
-];
-
-function Playbook() {
-  return (
-    <section className="mt-24">
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div><p className="font-mono text-xs text-muted-foreground">STRATEGY</p><h2 className="mt-2 text-3xl font-bold tracking-[-0.03em] sm:text-4xl">News + fib playbook</h2></div>
-        <p className="max-w-xs text-sm text-muted-foreground sm:text-right">Six rules. Direction from the news, location from the fib.</p>
-      </div>
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {steps.map((s, i) => (
-          <div key={s.t} className="rounded-2xl border bg-card p-6 transition-colors hover:border-gold/40">
-            <p className="font-mono text-xs text-gold">0{i + 1}</p>
-            <p className="mt-3 font-medium">{s.t}</p>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.d}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function Calculator({ price }: { price: number | null }) {
-  const [bal, setBal] = useState("10000");
-  const [risk, setRisk] = useState("1");
-  const [stop, setStop] = useState("10");
-  const lots = lotSize(Number(bal), Number(risk), Number(stop));
-  const riskUsd = (Number(bal) * Number(risk)) / 100;
-  const field = "mt-2 w-full rounded-lg border bg-background px-3 py-2 font-mono outline-none focus:border-gold";
-  return (
-    <section className="mt-24">
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div><p className="font-mono text-xs text-muted-foreground">RISK</p><h2 className="mt-2 text-3xl font-bold tracking-[-0.03em] sm:text-4xl">Lot size calculator</h2></div>
-        <p className="max-w-xs text-sm text-muted-foreground sm:text-right">Gold: 1 lot = 100 oz, so a $1 move is $100 per lot.</p>
-      </div>
-      <div className="grid grid-cols-1 gap-5 rounded-3xl border bg-card p-5 sm:p-8 md:grid-cols-[1fr_320px]">
-        <div className="grid grid-cols-1 gap-5 text-sm sm:grid-cols-3">
-          <label>Account balance ($)<input className={field} value={bal} onChange={(e) => setBal(e.target.value)} inputMode="decimal" /></label>
-          <label>Risk per trade (%)<input className={field} value={risk} onChange={(e) => setRisk(e.target.value)} inputMode="decimal" /></label>
-          <label>Stop distance ($){price && <span className="text-muted-foreground"> · gold {price.toFixed(0)}</span>}<input className={field} value={stop} onChange={(e) => setStop(e.target.value)} inputMode="decimal" /></label>
-        </div>
-        <div className="border-t pt-6 md:border-l md:border-t-0 md:pl-8 md:pt-0">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Position size</p>
-          <p className="mt-2 font-mono text-4xl text-gold sm:text-5xl">{lots.toFixed(2)}<span className="text-lg text-muted-foreground"> lots</span></p>
-          <p className="mt-2 text-sm text-muted-foreground">Risking ${Number.isFinite(riskUsd) ? riskUsd.toFixed(2) : "—"}</p>
-        </div>
-      </div>
-    </section>
   );
 }
