@@ -39,6 +39,32 @@
 
 :root {
   --radius: 1rem;
+  --background: oklch(0.98 0 0);
+  --foreground: oklch(0.15 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0 0);
+  --primary: oklch(0.15 0 0);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.94 0 0);
+  --secondary-foreground: oklch(0.15 0 0);
+  --muted: oklch(0.94 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.94 0 0);
+  --accent-foreground: oklch(0.15 0 0);
+  --destructive: oklch(0.63 0.21 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0 0 0 / 8%);
+  --input: oklch(0 0 0 / 12%);
+  --ring: oklch(0.7 0.13 85);
+  --gold: oklch(0.7 0.13 85);
+  --bull: oklch(0.6 0.17 150);
+  --bear: oklch(0.55 0.21 25);
+  --faint: oklch(0 0 0 / 4%);
+}
+
+.dark {
   --background: oklch(0.13 0 0);
   --foreground: oklch(0.97 0 0);
   --card: oklch(0.17 0 0);
