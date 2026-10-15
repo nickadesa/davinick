@@ -1,26 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { getCandles } from "@/lib/market.functions";
 import type { Candle } from "@/lib/signals";
 import { SiteNav } from "@/components/SiteNav";
 import { KillzoneRadar } from "@/components/KillzoneRadar";
 
-type Symbol = "XAUUSD" | "NQ" | "ES";
 type Timeframe = "1D" | "1W" | "1M" | "3M" | "1Y" | "ALL";
-
-const SYMBOLS: { id: Symbol; label: string }[] = [
-  { id: "XAUUSD", label: "Gold" },
-  { id: "NQ", label: "NQ" },
-  { id: "ES", label: "ES" },
-];
 
 const TIMEFRAMES: Timeframe[] = ["1D", "1W", "1M", "3M", "1Y", "ALL"];
 
-const candlesQuery = (symbol: Symbol, timeframe: Timeframe) =>
+const candlesQuery = (timeframe: Timeframe) =>
   queryOptions({
-    queryKey: ["candles", symbol, timeframe],
-    queryFn: () => getCandles({ data: { symbol, timeframe } }),
+    queryKey: ["candles", "XAUUSD", timeframe],
+    queryFn: () => getCandles({ data: { symbol: "XAUUSD", timeframe } }),
     staleTime: 60_000,
   });
 
@@ -30,18 +23,17 @@ export const Route = createFileRoute("/desk")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { title: "Chart — TOPTIERclub" },
-      { name: "description", content: "Live XAUUSD, NQ and ES line charts." },
+      { name: "description", content: "Live XAU/USD line chart." },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(candlesQuery("XAUUSD", "1D")),
+  loader: ({ context }) => context.queryClient.ensureQueryData(candlesQuery("1D")),
   errorComponent: () => <div className="p-20 text-center text-muted-foreground">The desk couldn't load. Try again shortly.</div>,
   component: Desk,
 });
 
 function Desk() {
-  const [symbol, setSymbol] = useState<Symbol>("XAUUSD");
   const [tf, setTf] = useState<Timeframe>("1D");
-  const { data } = useQuery(candlesQuery(symbol, tf));
+  const { data } = useQuery(candlesQuery(tf));
   const candles = data?.candles ?? [];
   const last = candles.at(-1)?.c;
   const first = candles[0]?.c;
@@ -54,20 +46,9 @@ function Desk() {
       <SiteNav />
       <main className="mx-auto max-w-3xl px-5 pb-32 sm:px-8">
         <section className="pt-12 pb-6 sm:pt-16">
-          <div className="flex gap-2">
-            {SYMBOLS.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setSymbol(s.id)}
-                className={`rounded-full px-4 py-1.5 font-mono text-xs uppercase tracking-widest transition-colors ${
-                  symbol === s.id ? "bg-gold text-black" : "border text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-          <p className="mt-8 font-mono text-5xl sm:text-6xl">{last?.toFixed(2) ?? "—"}</p>
+          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">XAU/USD</p>
+          <p className="mt-2 text-sm text-muted-foreground">Gold Spot</p>
+          <p className="mt-6 font-mono text-5xl sm:text-6xl">{last?.toFixed(2) ?? "—"}</p>
           {change != null && changePct != null && (
             <p className={`mt-2 font-mono text-sm ${up ? "text-bull" : "text-bear"}`}>
               {up ? "▲" : "▼"} {change.toFixed(2)} ({changePct.toFixed(2)}%)
