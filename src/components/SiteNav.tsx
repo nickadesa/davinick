@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChartCandlestick, ChevronDown, Menu, Newspaper, Zap } from "lucide-react";
+import { ChartCandlestick, ChevronDown, Menu, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -14,16 +14,13 @@ export function SiteNav() {
     <header className="glass sticky top-0 z-40 w-full border-b">
       <nav aria-label="Main navigation" className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-5 sm:px-10">
         <Link to="/" aria-label="TOPTIERclub home" className="shrink-0 text-xl font-bold sm:text-2xl">TOPTIER<span className="font-normal text-muted-foreground">club</span></Link>
-        <div className="hidden items-center gap-6 sm:flex">
-          {pages.map(({ to, label }) => (
-            <Link key={to} to={to} className={`text-sm ${pathname === to ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              {label}
-            </Link>
-          ))}
-        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2 border border-border sm:hidden" aria-label="Open navigation menu"><Menu /><ChevronDown /></Button>
+            <Button variant="ghost" className="gap-2 border border-border" aria-label="Open navigation menu">
+              <Menu />
+              <span className="hidden sm:inline">Menu</span>
+              <ChevronDown />
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" sideOffset={12} className="w-56 p-2">
             <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">TOPTIERclub</DropdownMenuLabel>
