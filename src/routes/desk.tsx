@@ -44,13 +44,13 @@ function Desk() {
   return (
     <div className="min-h-screen">
       <SiteNav />
-      <main className="mx-auto max-w-3xl px-5 pb-32 sm:px-8">
-        <section className="pt-12 pb-6 sm:pt-16">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">XAU/USD</p>
-          <p className="mt-2 text-sm text-muted-foreground">Gold Spot</p>
-          <p className="mt-6 font-mono text-5xl sm:text-6xl">{last?.toFixed(2) ?? "—"}</p>
+      <main className="mx-auto max-w-4xl px-5 pb-32 sm:px-8">
+        <section className="pt-10 pb-4 sm:pt-14">
+          <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">XAU/USD</p>
+          <p className="mt-1 text-base text-muted-foreground">Gold Spot</p>
+          <p className="mt-4 font-mono text-6xl font-medium tracking-tight sm:text-7xl">{last?.toFixed(2) ?? "—"}</p>
           {change != null && changePct != null && (
-            <p className={`mt-2 font-mono text-sm ${up ? "text-bull" : "text-bear"}`}>
+            <p className={`mt-2 font-mono text-lg ${up ? "text-bull" : "text-bear"}`}>
               {up ? "▲" : "▼"} {change.toFixed(2)} ({changePct.toFixed(2)}%)
             </p>
           )}
@@ -60,7 +60,7 @@ function Desk() {
         {candles.length > 0 ? (
           <LineChart candles={candles} up={up} />
         ) : (
-          <div className="h-64 animate-pulse rounded-2xl bg-muted/30 sm:h-80" />
+          <div className="h-80 animate-pulse rounded-2xl bg-muted/30 sm:h-96" />
         )}
 
         <div className="mt-6 flex justify-between gap-1">
@@ -68,7 +68,7 @@ function Desk() {
             <button
               key={t}
               onClick={() => setTf(t)}
-              className={`flex-1 rounded-full py-2 font-mono text-xs uppercase tracking-widest transition-colors ${
+              className={`flex-1 rounded-full py-2.5 font-mono text-xs uppercase tracking-widest transition-colors sm:text-sm ${
                 tf === t ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -84,7 +84,7 @@ function Desk() {
 }
 
 function LineChart({ candles, up }: { candles: Candle[]; up: boolean }) {
-  const W = 800, H = 320, pad = 12;
+  const W = 1000, H = 420, pad = 8;
   const prices = candles.map((c) => c.c);
   const min = Math.min(...prices);
   const max = Math.max(...prices);
@@ -95,11 +95,11 @@ function LineChart({ candles, up }: { candles: Candle[]; up: boolean }) {
   const color = up ? "#22c55e" : "#ef4444";
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-64 w-full sm:h-80" preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-80 w-full sm:h-96" preserveAspectRatio="none">
       <polyline
         fill="none"
         stroke={color}
-        strokeWidth="2.5"
+        strokeWidth="3"
         strokeLinejoin="round"
         strokeLinecap="round"
         points={points}
