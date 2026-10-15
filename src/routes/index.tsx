@@ -152,7 +152,7 @@ function AiSection() {
 
   return (
     <section id="ai" className="mt-24 scroll-mt-24">
-      <Heading k="AI" title="AI desk analysis" sub="The model reads this week's red news and writes the outlook and pre-release calls." />
+      <Heading k="AI" title="AI desk analysis" sub="The model reads this week's red news and writes the call — bias, confidence, and levels." />
       {data.error && <p className="mb-4 text-sm text-bear">{data.error}</p>}
       {!a ? (
         <p className="rounded-2xl border px-6 py-14 text-center text-sm text-muted-foreground">No AI analysis yet.</p>
@@ -169,6 +169,7 @@ function AiSection() {
             </div>
             <p className="mt-3 max-w-3xl text-base leading-relaxed sm:text-lg">{a.outlook}</p>
           </div>
+          <AiSignalCard label="XAUUSD" name="Gold Spot / USD" s={a.xauusd} />
           {a.events.some((ev) => "signal" in ev) && (
             <div>
               <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Pre-release calls · before the news drops</p>
@@ -224,6 +225,21 @@ function AiSection() {
         </div>
       )}
     </section>
+  );
+}
+
+function AiSignalCard({ label, name, s }: { label: string; name: string; s: { action: "BUY" | "SELL" | "NEUTRAL"; confidence: number; reasoning: string; entry: number | null; stopLoss: number | null; takeProfit: number | null } }) {
+  const color = s.action === "BUY" ? "text-bull" : s.action === "SELL" ? "text-bear" : "text-muted-foreground";
+  return (
+    <div className="rounded-3xl border bg-card p-5 transition-colors hover:border-gold/40 sm:p-8">
+      <p className="font-mono text-xs tracking-widest text-muted-foreground">{label}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{name}</p>
+      <div className="mt-6 flex items-baseline gap-4">
+        <p className={`text-4xl font-bold tracking-[-0.04em] sm:text-5xl ${color}`}>{s.action}</p>
+        <p className="font-mono text-xl text-muted-foreground">{s.confidence}%</p>
+      </div>
+      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{s.reasoning}</p>
+    </div>
   );
 }
 
