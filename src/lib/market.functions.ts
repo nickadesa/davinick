@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { computeSignal, aiRefreshPlan, type Asset, type AiStage } from "./signals";
-import { currentPrice, goldCandles, recordSignal, loadCalendar, priceAt, PRICE_SYMBOLS, publicDb } from "./market.server";
+import { currentPrice, fetchCandles, recordSignal, loadCalendar, priceAt, PRICE_SYMBOLS, publicDb, type ChartSymbol, type Timeframe } from "./market.server";
 import { runAiAnalysis, type AiAnalysis } from "./ai.server";
 
 export const getCalendar = createServerFn({ method: "GET" }).handler(async () => {
@@ -104,12 +104,16 @@ export const getHistory = createServerFn({ method: "GET" }).handler(async () => 
 });
 
 export const getCandles = createServerFn({ method: "GET" })
-  .inputValidator((d) => z.object({ interval: z.enum(["15min", "1h", "4h"]) }).parse(d))
+  .inputValidator((d) => z.object({
+    symbol: z.enum(["XAUUSD", "NQ", "ES"]).default("XAUUSD"),
+    timeframe: z.enum(["1D", "1W", "1M", "3M", "1Y", "ALL"]).default("1D"),
+  }).parse(d))
   .handler(async ({ data }) => {
     try {
-      return { candles: await goldCandles(data.interval), error: null as string | null };
+      const candles = await fetchCandles(data.symbol as ChartSymbol, data.timeframe as Timeframe);
+      return { candles, error: null as string | null };
     } catch (e) {
       console.error(e);
-      return { candles: [], error: "Gold prices aren't available right now." };
+      return { candles: [], error: "Prices aren't available right now." };
     }
   });
