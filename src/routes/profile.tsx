@@ -35,15 +35,15 @@ function Profile() {
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-muted">
             <span className="text-3xl">👤</span>
           </div>
-          <h1 className="mt-6 text-2xl font-bold">โปรไฟล์</h1>
-          <p className="mt-2 text-muted-foreground">ระบบผู้ใช้กำลังมาในข้อถัดไป</p>
+          <h1 className="mt-6 text-2xl font-bold">Profile</h1>
+          <p className="mt-2 text-muted-foreground">User system coming next</p>
         </div>
 
         <div className="mt-12 rounded-2xl border bg-card p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">โหมด</p>
-              <p className="text-sm text-muted-foreground">{dark ? "มืด" : "สว่าง"}</p>
+              <p className="font-medium">Theme</p>
+              <p className="text-sm text-muted-foreground">{dark ? "Dark" : "Light"}</p>
             </div>
             <button
               onClick={toggle}
