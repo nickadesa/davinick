@@ -3,22 +3,6 @@ import { streamText, Output } from "ai";
 import { z } from "zod";
 import type { NewsEvent } from "./signals";
 
-const LOVABLE_AIG_RUN_ID_HEADER = "X-Lovable-AIG-Run-ID";
-
-function createRunIdFetch(initialRunId?: string) {
-  let runId = initialRunId?.trim() || undefined;
-  return {
-    getRunId: () => runId,
-    fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
-      const headers = new Headers(init?.headers);
-      if (runId && !headers.has(LOVABLE_AIG_RUN_ID_HEADER)) headers.set(LOVABLE_AIG_RUN_ID_HEADER, runId);
-      const response = await fetch(input, { ...init, headers });
-      runId ??= response.headers.get(LOVABLE_AIG_RUN_ID_HEADER)?.trim() || undefined;
-      return response;
-    },
-  };
-}
-
 const analysisSchema = z.object({
   outlook: z.string().describe("2-3 sentence weekly outlook for gold based on this week's high-impact USD events"),
   xauusd: z.object({
@@ -48,15 +32,12 @@ export type AiAnalysis = z.infer<typeof analysisSchema> & { generatedAt: string 
 
 /** Ask the AI to analyse this week's red-folder USD events and produce signals for gold. */
 export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: number | null }): Promise<AiAnalysis> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
+  const apiKey = process.env["GROQ_API_KEY"];
+  if (!apiKey) throw new Error("GROQ_API_KEY missing");
 
-  const runIdFetch = createRunIdFetch();
   const provider = createOpenAI({
-    baseURL: "https://ai.gateway.lovable.dev/v1",
+    baseURL: "https://api.groq.com/openai/v1",
     apiKey,
-    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-    fetch: runIdFetch.fetch,
   });
 
   const eventLines = events
@@ -67,7 +48,7 @@ export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: numbe
     .join("\n");
 
   const result = streamText({
-    model: provider.responses("openai/gpt-6-astra"),
+    model: provider.chat("llama-3.3-70b-versatile"),
     system:
       "You are a macro trading analyst. Analyse high-impact US economic events and give directional signals for XAUUSD (gold). Stronger-than-expected US data usually lifts the dollar and yields, pressuring gold; weak data does the opposite. Confidence is 50-95, never 100. Suggest entry, stop loss and take profit levels near the current price given; where useful, place entries at the 61.8% or 78.6% Fibonacci retracement of the latest swing, with roughly 1:2 risk-reward; use null when the action is NEUTRAL. For EVERY event in the list (especially ones not yet released) give a pre-release call: read forecast vs previous, recent trend and market positioning to predict whether the figure is likely to beat or miss, then give the expected gold bias, a BUY/SELL/NEUTRAL signal with confidence, and what happens to gold if it beats or misses. Pre-release confidence should usually stay 50-70 since the number is unknown. Keep every text field short.",
     messages: [
@@ -77,15 +58,6 @@ export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: numbe
       },
     ],
     output: Output.object({ schema: analysisSchema }),
-    providerOptions: {
-      openai: {
-        store: false,
-        forceReasoning: true,
-        reasoningEffort: "low",
-        reasoningSummary: "auto",
-        include: ["reasoning.encrypted_content"],
-      },
-    },
   });
 
   const object = await result.output;
