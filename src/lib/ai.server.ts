@@ -32,11 +32,11 @@ export type AiAnalysis = z.infer<typeof analysisSchema> & { generatedAt: string 
 
 /** Ask the AI to analyse this week's red-folder USD events and produce signals for gold. */
 export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: number | null }): Promise<AiAnalysis> {
-  const apiKey = process.env["GROQ_API_KEY"];
-  if (!apiKey) throw new Error("GROQ_API_KEY missing");
+  const apiKey = process.env["GEMINI_API_KEY"];
+  if (!apiKey) throw new Error("GEMINI_API_KEY missing");
 
   const provider = createOpenAI({
-    baseURL: "https://api.groq.com/openai/v1",
+    baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
     apiKey,
   });
 
@@ -48,7 +48,7 @@ export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: numbe
     .join("\n");
 
   const result = await generateText({
-    model: provider.chat("openai/gpt-oss-20b"),
+    model: provider.chat("gemini-2.5-flash"),
     system:
       "You are a macro trading analyst. Analyse high-impact US economic events and give directional signals for XAUUSD (gold). Stronger-than-expected US data usually lifts the dollar and yields, pressuring gold; weak data does the opposite. Confidence is 50-95, never 100. Suggest entry, stop loss and take profit levels near the current price given; where useful, place entries at the 61.8% or 78.6% Fibonacci retracement of the latest swing, with roughly 1:2 risk-reward; use null when the action is NEUTRAL. For EVERY event in the list (especially ones not yet released) give a pre-release call: read forecast vs previous, recent trend and market positioning to predict whether the figure is likely to beat or miss, then give the expected gold bias, a BUY/SELL/NEUTRAL signal with confidence, and what happens to gold if it beats or misses. Pre-release confidence should usually stay 50-70 since the number is unknown. Keep every text field short. Always respond with valid JSON matching the required schema.",
     messages: [
