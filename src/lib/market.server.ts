@@ -4,7 +4,13 @@ import { classifyEvent, computeSignal, parseFigure, type Asset, type Candle, typ
 import { applyTransform, fredRuleFor, isFreshRelease } from "./fred";
 
 const FEED = "https://nfs.faireconomy.media/ff_calendar_thisweek.json";
-export const PRICE_SYMBOLS = { XAUUSD: "XAU/USD" } as const;
+export const PRICE_SYMBOLS = {
+  XAUUSD: "XAU/USD",
+  NQ: "NQ",
+  ES: "ES",
+} as const;
+
+export type ChartSymbol = keyof typeof PRICE_SYMBOLS;
 
 interface FFEvent { title: string; country: string; date: string; impact: string; forecast: string; previous: string }
 
@@ -177,8 +183,28 @@ export async function priceAt(symbol: string, at: Date): Promise<number | null> 
   return Number(first.close);
 }
 
+export type Timeframe = "1D" | "1W" | "1M" | "3M" | "1Y" | "ALL";
 
-/** Recent gold candles, oldest first. */
+const TF_CONFIG: Record<Timeframe, { interval: string; size: number }> = {
+  "1D": { interval: "5min", size: 78 },
+  "1W": { interval: "1h", size: 120 },
+  "1M": { interval: "4h", size: 120 },
+  "3M": { interval: "1day", size: 90 },
+  "1Y": { interval: "1day", size: 252 },
+  "ALL": { interval: "1week", size: 200 },
+};
+
+/** Candles for any supported symbol, oldest first. */
+export async function fetchCandles(symbol: ChartSymbol, tf: Timeframe): Promise<Candle[]> {
+  const cfg = TF_CONFIG[tf];
+  const sym = PRICE_SYMBOLS[symbol];
+  const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(sym)}&interval=${cfg.interval}&timezone=UTC&outputsize=${cfg.size}&apikey=${tdKey()}`;
+  const j = (await (await fetch(url)).json()) as { values?: { datetime: string; open: string; high: string; low: string; close: string }[]; message?: string };
+  if (!j.values) throw new Error(`Twelve Data candles error: ${j.message ?? "unknown"}`);
+  return j.values.map((v) => ({ t: v.datetime, o: +v.open, h: +v.high, l: +v.low, c: +v.close })).reverse();
+}
+
+/** @deprecated use fetchCandles */
 export async function goldCandles(interval: "15min" | "1h" | "4h", size = 120): Promise<Candle[]> {
   const url = `https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=${interval}&timezone=UTC&outputsize=${size}&apikey=${tdKey()}`;
   const j = (await (await fetch(url)).json()) as { values?: { datetime: string; open: string; high: string; low: string; close: string }[]; message?: string };
