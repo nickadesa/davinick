@@ -59,7 +59,8 @@ export const getAiAnalysis = createServerFn({ method: "GET" })
       console.error(e);
       const { data: cached } = await supabaseAdmin.from("ai_analysis").select("payload").eq("id", 1).maybeSingle();
       if (cached) return { analysis: cached.payload as unknown as AiAnalysis, error: null, stage };
-      return { stage, analysis: null, error: "AI analysis isn't available right now. Try again in a moment." };
+      const msg = e instanceof Error ? e.message : String(e);
+      return { stage, analysis: null, error: `AI error: ${msg.slice(0, 180)}` };
     }
   });
 
