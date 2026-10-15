@@ -4,17 +4,11 @@ import { useState } from "react";
 import { getCandles } from "@/lib/market.functions";
 import type { Candle } from "@/lib/signals";
 import { SiteNav } from "@/components/SiteNav";
+import { KillzoneRadar } from "@/components/KillzoneRadar";
 
 type Timeframe = "1D" | "1W" | "1M" | "3M" | "1Y" | "ALL";
 
-const TIMEFRAMES: { id: Timeframe; label: string }[] = [
-  { id: "1D", label: "1D" },
-  { id: "1W", label: "1W" },
-  { id: "1M", label: "1M" },
-  { id: "3M", label: "3M" },
-  { id: "1Y", label: "1Y" },
-  { id: "ALL", label: "ALL" },
-];
+const TIMEFRAMES: Timeframe[] = ["1D", "1W", "1M", "3M", "1Y", "ALL"];
 
 const candlesQuery = (timeframe: Timeframe) =>
   queryOptions({
@@ -46,51 +40,53 @@ function Desk() {
   const change = last != null && first != null ? last - first : null;
   const changePct = change != null && first ? (change / first) * 100 : null;
   const up = (change ?? 0) >= 0;
-  const periodLabel = tf === "1D" ? "Today" : tf === "1W" ? "Past Week" : tf === "1M" ? "Past Month" : tf === "3M" ? "Past 3 Months" : tf === "1Y" ? "Past Year" : "All Time";
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen">
       <SiteNav />
-      <main className="mx-auto max-w-lg px-5 pb-24 pt-6">
-        <p className="font-mono text-sm text-neutral-400">XAU/USD</p>
-        <p className="mt-1 text-4xl font-semibold tracking-tight sm:text-5xl">
-          {last?.toFixed(2) ?? "—"}
-        </p>
-        {change != null && changePct != null && (
-          <p className={`mt-2 text-sm font-medium ${up ? "text-green-500" : "text-red-500"}`}>
-            {up ? "▲" : "▼"} {change.toFixed(2)} ({changePct.toFixed(2)}%) <span className="text-neutral-400">{periodLabel}</span>
-          </p>
+      <main className="mx-auto max-w-3xl px-5 pb-32 sm:px-8">
+        <section className="pt-12 pb-6 sm:pt-16">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <p className="font-mono text-5xl sm:text-6xl">{last?.toFixed(2) ?? "—"}</p>
+            <p className="font-mono text-5xl text-muted-foreground sm:text-6xl">XAU/USD</p>
+            <p className="text-5xl text-muted-foreground sm:text-6xl">Gold Spot</p>
+          </div>
+          {change != null && changePct != null && (
+            <p className={`mt-2 font-mono text-sm ${up ? "text-bull" : "text-bear"}`}>
+              {up ? "▲" : "▼"} {change.toFixed(2)} ({changePct.toFixed(2)}%)
+            </p>
+          )}
+        </section>
+
+        {data?.error && <p className="mb-4 text-sm text-bear">{data.error}</p>}
+        {candles.length > 0 ? (
+          <LineChart candles={candles} up={up} />
+        ) : (
+          <div className="h-64 animate-pulse rounded-2xl bg-muted/30 sm:h-80" />
         )}
 
-        {data?.error && <p className="mt-4 text-sm text-red-500">{data.error}</p>}
-        <div className="mt-8">
-          {candles.length > 0 ? (
-            <LineChart candles={candles} up={up} />
-          ) : (
-            <div className="h-64 animate-pulse rounded-lg bg-neutral-900" />
-          )}
-        </div>
-
-        <div className="mt-6 flex items-center justify-between px-1">
+        <div className="mt-6 flex justify-between gap-1">
           {TIMEFRAMES.map((t) => (
             <button
-              key={t.id}
-              onClick={() => setTf(t.id)}
-              className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                tf === t.id ? "bg-green-500 text-black" : "text-green-500 hover:text-green-400"
+              key={t}
+              onClick={() => setTf(t)}
+              className={`flex-1 rounded-full py-2 font-mono text-xs uppercase tracking-widest transition-colors ${
+                tf === t ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t.label}
+              {t}
             </button>
           ))}
         </div>
+
+        <KillzoneRadar />
       </main>
     </div>
   );
 }
 
 function LineChart({ candles, up }: { candles: Candle[]; up: boolean }) {
-  const W = 1000, H = 380, pad = 4;
+  const W = 800, H = 320, pad = 12;
   const prices = candles.map((c) => c.c);
   const min = Math.min(...prices);
   const max = Math.max(...prices);
@@ -101,7 +97,7 @@ function LineChart({ candles, up }: { candles: Candle[]; up: boolean }) {
   const color = up ? "#22c55e" : "#ef4444";
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-64 w-full" preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-64 w-full sm:h-80" preserveAspectRatio="none">
       <polyline
         fill="none"
         stroke={color}
