@@ -28,20 +28,34 @@ export function eventKey(title: string, iso: string) {
 }
 
 /** Real USD red-folder events for this week, merged with actual figures saved in the database. */
-/** The free feed rate-limits hard, so keep one shared copy and refresh it at most every 15 minutes. */
+/** The free feed rate-limits hard, so keep one shared copy and refresh it at most every 30 minutes. */
 async function fetchFeed(): Promise<FFEvent[]> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: cached } = await supabaseAdmin.from("calendar_cache").select("payload, fetched_at").eq("id", 1).maybeSingle();
-  const fresh = cached && Date.now() - new Date(cached.fetched_at).getTime() < 15 * 60e3;
+  const age = cached ? Date.now() - new Date(cached.fetched_at).getTime() : Infinity;
+  const fresh = age < 30 * 60e3;
   if (cached && fresh) return cached.payload as unknown as FFEvent[];
-  const res = await fetch(FEED, { headers: { "User-Agent": "RedBox/1.0" } });
-  if (!res.ok) {
-    if (cached) return cached.payload as unknown as FFEvent[];
-    throw new Error(`Calendar feed failed [${res.status}]`);
+
+  const headers = {
+    "User-Agent": "Mozilla/5.0 (compatible; TOPTIERclub/1.0; +https://toptierclub.vercel.app)",
+    Accept: "application/json",
+  };
+
+  let lastStatus = 0;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 1500 * attempt));
+    const res = await fetch(FEED, { headers });
+    lastStatus = res.status;
+    if (res.ok) {
+      const raw = (await res.json()) as FFEvent[];
+      await supabaseAdmin.from("calendar_cache").upsert({ id: 1, payload: raw as never, fetched_at: new Date().toISOString() });
+      return raw;
+    }
+    if (res.status !== 429 && res.status !== 503) break;
   }
-  const raw = (await res.json()) as FFEvent[];
-  await supabaseAdmin.from("calendar_cache").upsert({ id: 1, payload: raw as never, fetched_at: new Date().toISOString() });
-  return raw;
+
+  if (cached) return cached.payload as unknown as FFEvent[];
+  throw new Error(`Calendar feed failed [${lastStatus}]`);
 }
 
 export async function loadCalendar(): Promise<NewsEvent[]> {
