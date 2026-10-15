@@ -46,11 +46,8 @@ function Desk() {
       <SiteNav />
       <main className="mx-auto max-w-3xl px-5 pb-32 sm:px-8">
         <section className="pt-12 pb-6 sm:pt-16">
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <p className="font-mono text-5xl sm:text-6xl">{last?.toFixed(2) ?? "—"}</p>
-            <p className="font-mono text-5xl text-muted-foreground sm:text-6xl">XAU/USD</p>
-            <p className="text-5xl text-muted-foreground sm:text-6xl">Gold Spot</p>
-          </div>
+          <p className="font-mono text-sm text-muted-foreground">XAU/USD · Gold Spot</p>
+          <p className="mt-2 font-mono text-5xl sm:text-6xl">{last?.toFixed(2) ?? "—"}</p>
           {change != null && changePct != null && (
             <p className={`mt-2 font-mono text-sm ${up ? "text-bull" : "text-bear"}`}>
               {up ? "▲" : "▼"} {change.toFixed(2)} ({changePct.toFixed(2)}%)
