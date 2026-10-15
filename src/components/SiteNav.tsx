@@ -1,11 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChartCandlestick, ChevronDown, Menu, Newspaper } from "lucide-react";
+import { ChartCandlestick, ChevronDown, Menu, Newspaper, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const pages = [
   { to: "/", label: "Signals & news", icon: Newspaper },
   { to: "/desk", label: "Chart", icon: ChartCandlestick },
+  { to: "/profile", label: "Profile", icon: User },
 ] as const;
 
 export function SiteNav() {
