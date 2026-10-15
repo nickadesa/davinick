@@ -46,11 +46,13 @@ function Desk() {
       <SiteNav />
       <main className="mx-auto max-w-4xl px-5 pb-32 sm:px-8">
         <section className="pt-10 pb-4 sm:pt-14">
-          <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">XAU/USD</p>
-          <p className="mt-1 text-base text-muted-foreground">Gold Spot</p>
-          <p className="mt-4 font-mono text-6xl font-medium tracking-tight sm:text-7xl">{last?.toFixed(2) ?? "—"}</p>
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <p className="font-mono text-5xl tracking-tight sm:text-6xl">{last?.toFixed(2) ?? "—"}</p>
+            <p className="font-mono text-5xl tracking-tight text-muted-foreground sm:text-6xl">XAU/USD</p>
+            <p className="text-5xl tracking-tight text-muted-foreground sm:text-6xl">Gold Spot</p>
+          </div>
           {change != null && changePct != null && (
-            <p className={`mt-2 font-mono text-lg ${up ? "text-bull" : "text-bear"}`}>
+            <p className={`mt-3 font-mono text-lg ${up ? "text-bull" : "text-bear"}`}>
               {up ? "▲" : "▼"} {change.toFixed(2)} ({changePct.toFixed(2)}%)
             </p>
           )}
