@@ -1,5 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText, Output } from "ai";
+import { generateText, Output } from "ai";
 import { z } from "zod";
 import type { NewsEvent } from "./signals";
 
@@ -47,10 +47,10 @@ export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: numbe
     )
     .join("\n");
 
-  const result = streamText({
+  const result = await generateText({
     model: provider.chat("llama-3.3-70b-versatile"),
     system:
-      "You are a macro trading analyst. Analyse high-impact US economic events and give directional signals for XAUUSD (gold). Stronger-than-expected US data usually lifts the dollar and yields, pressuring gold; weak data does the opposite. Confidence is 50-95, never 100. Suggest entry, stop loss and take profit levels near the current price given; where useful, place entries at the 61.8% or 78.6% Fibonacci retracement of the latest swing, with roughly 1:2 risk-reward; use null when the action is NEUTRAL. For EVERY event in the list (especially ones not yet released) give a pre-release call: read forecast vs previous, recent trend and market positioning to predict whether the figure is likely to beat or miss, then give the expected gold bias, a BUY/SELL/NEUTRAL signal with confidence, and what happens to gold if it beats or misses. Pre-release confidence should usually stay 50-70 since the number is unknown. Keep every text field short.",
+      "You are a macro trading analyst. Analyse high-impact US economic events and give directional signals for XAUUSD (gold). Stronger-than-expected US data usually lifts the dollar and yields, pressuring gold; weak data does the opposite. Confidence is 50-95, never 100. Suggest entry, stop loss and take profit levels near the current price given; where useful, place entries at the 61.8% or 78.6% Fibonacci retracement of the latest swing, with roughly 1:2 risk-reward; use null when the action is NEUTRAL. For EVERY event in the list (especially ones not yet released) give a pre-release call: read forecast vs previous, recent trend and market positioning to predict whether the figure is likely to beat or miss, then give the expected gold bias, a BUY/SELL/NEUTRAL signal with confidence, and what happens to gold if it beats or misses. Pre-release confidence should usually stay 50-70 since the number is unknown. Keep every text field short. Always respond with valid JSON matching the required schema.",
     messages: [
       {
         role: "user",
@@ -60,7 +60,9 @@ export async function runAiAnalysis(events: NewsEvent[], prices: { xauusd: numbe
     output: Output.object({ schema: analysisSchema }),
   });
 
-  const object = await result.output;
+  const object = result.output;
+  if (!object) throw new Error("AI returned no structured output");
+
   const clamp = (n: number) => Math.round(Math.min(95, Math.max(50, n)));
   object.xauusd.confidence = clamp(object.xauusd.confidence);
   object.events = object.events.map((e) => ({ ...e, confidence: clamp(e.confidence) }));
