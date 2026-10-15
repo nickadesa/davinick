@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
       { title: "TOPTIERclub — News-driven gold signals" },
       { name: "description", content: "High-impact economic news analysed into BUY/SELL bias with a confidence score for XAUUSD." },
-      { property: "og:title", content: "TOPTIERclub — News-driven gold signals" },
+      { property: "og:title", content: "for" },
       { property: "og:description", content: "Red-folder news in, confidence-scored gold bias out." },
     ],
   }),
