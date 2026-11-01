@@ -15,3 +15,13 @@ describe("aiRefreshPlan", () => {
     expect(aiRefreshPlan([at(30 * 3600e3)], now - 50 * 3600e3, now)).toEqual({ refresh: false, stage: null });
   });
 });
+
+import { aiIsOutdated } from "./signals";
+describe("aiIsOutdated", () => {
+  it("is outdated when this week's news isn't in the saved analysis", () => {
+    expect(aiIsOutdated(["2026-10-14T12:30:00Z"], ["2026-11-04T13:30:00Z"])).toBe(true);
+  });
+  it("is current when every calendar event was analysed", () => {
+    expect(aiIsOutdated(["2026-11-04T13:30:00.000Z", "2026-11-06T13:30:00Z"], ["2026-11-04T13:30:00Z"])).toBe(false);
+  });
+});

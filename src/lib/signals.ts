@@ -112,6 +112,12 @@ export interface Candle { t: string; o: number; h: number; l: number; c: number 
 export type AiStage = "24h" | "15m" | null;
 
 /** Decide whether the AI analysis must be regenerated: once 24h before the next red-news event, and again 15 min before it. */
+/** True when a saved AI analysis no longer matches the current news calendar (e.g. a new week started). */
+export function aiIsOutdated(analysedTimes: (string | undefined)[], calendarTimes: string[]): boolean {
+  const have = new Set(analysedTimes.filter(Boolean).map((t) => new Date(t!).getTime()));
+  return calendarTimes.some((t) => !have.has(new Date(t).getTime()));
+}
+
 export function aiRefreshPlan(eventTimes: string[], cachedAt: number | null, now: number): { refresh: boolean; stage: AiStage } {
   const next = eventTimes.map((t) => new Date(t).getTime()).filter((t) => t > now).sort((a, b) => a - b)[0];
   if (cachedAt === null) return { refresh: true, stage: next && next - now <= 15 * 60e3 ? "15m" : next && next - now <= 24 * 3600e3 ? "24h" : null };
