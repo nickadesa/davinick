@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
       { title: "TOPTIERclub" },
       { name: "description", content: "High-impact economic news analysed into BUY/SELL bias with a confidence score for XAUUSD." },
-      { property: "og:title", content: "for" },
+      { property: "og:title", content: "TOPTIERclub — gold news signals" },
       { property: "og:description", content: "Red-folder news in, confidence-scored gold bias out." },
     ],
   }),
@@ -57,17 +57,14 @@ function Index() {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      <div aria-hidden className="pointer-events-none absolute -right-20 top-40 hidden select-none text-outline-giant text-[12rem] lg:block">
-        TOPTIER<br />club
-      </div>
       <SiteNav />
 
       <main className="relative mx-auto max-w-6xl px-4 pb-8 sm:px-10">
         <section className="pt-8 pb-8 sm:pt-28 sm:pb-20">
-          <h1 className="animate-blur-in text-4xl font-bold leading-[0.95] tracking-[-0.04em] sm:text-7xl">
+          <h1 className="animate-blur-in text-4xl font-medium leading-[0.95] tracking-[-0.02em] sm:text-7xl">
             Read the news.<br /><span className="text-muted-foreground">Not the noise.</span>
           </h1>
-          <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:mt-6 sm:text-xs sm:tracking-[0.25em]">XAUUSD · GOLD SPOT · RED FOLDER ONLY</p>
+          <p className="mt-4 font-mono text-[10px] text-muted-foreground sm:mt-6 sm:text-xs">XAUUSD · gold spot · red-folder news only</p>
           <p className="mt-5 max-w-lg text-base text-muted-foreground animate-blur-in [animation-delay:200ms] sm:mt-8 sm:text-lg">
             Every high-impact release is scored against forecast and turned into a directional bias —
             with an honest confidence, never a guarantee.
@@ -120,8 +117,8 @@ function Index() {
             })}
           </div>
           {Object.keys(what).length > 0 && (
-            <button onClick={() => setWhat({})} className="mt-4 font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground">
-              ↺ Reset to real data
+            <button onClick={() => setWhat({})} className="mt-4 font-mono text-xs text-muted-foreground hover:text-foreground">
+              Reset to real data
             </button>
           )}
         </section>
@@ -159,10 +156,10 @@ function AiSection() {
         <div className="space-y-4 sm:space-y-5">
           <div className="rounded-2xl border bg-card p-4 sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Weekly outlook</p>
+              <p className="font-mono text-xs text-muted-foreground">Weekly outlook</p>
               {data.stage && (
-                <span className="rounded-full border border-gold/40 px-3 py-1 font-mono text-xs uppercase tracking-widest text-gold">
-                  {data.stage === "15m" ? "⚡ Final 15m call" : "24h outlook"}
+                <span className="rounded-full border border-gold/40 px-3 py-1 font-mono text-xs text-gold">
+                  {data.stage === "15m" ? "Final 15m call" : "24h outlook"}
                 </span>
               )}
             </div>
@@ -171,7 +168,7 @@ function AiSection() {
           <AiSignalCard label="XAUUSD" name="Gold Spot / USD" s={a.xauusd} />
           {a.events.some((ev) => "signal" in ev) && (
             <div>
-              <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Pre-release calls · before the news drops</p>
+              <p className="mb-3 font-mono text-xs text-muted-foreground">Pre-release calls</p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                 {(() => {
                   const all = a.events.filter((ev) => "signal" in ev);
@@ -186,14 +183,14 @@ function AiSection() {
                             <p className="mt-1 font-mono text-xs text-muted-foreground">{ev.time ? new Date(ev.time).toLocaleString("en-GB", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/New_York" }) + " New York" : "—"} · {ev.released ? "released" : "upcoming"}</p>
                           </div>
                           <div className="text-right">
-                            <p className={`text-xl font-bold sm:text-2xl ${c}`}>{ev.signal}</p>
+                            <p className={`text-xl font-medium sm:text-2xl ${c}`}>{ev.signal}</p>
                             <p className="font-mono text-xs text-muted-foreground">{ev.confidence}% · {ev.bias}</p>
                           </div>
                         </div>
                         <p className="mt-3 text-sm text-muted-foreground">{ev.note}</p>
                         <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3 text-xs">
-                          <p><span className="font-mono uppercase tracking-widest text-muted-foreground">If beats</span><br />{ev.ifBeat}</p>
-                          <p><span className="font-mono uppercase tracking-widest text-muted-foreground">If misses</span><br />{ev.ifMiss}</p>
+                          <p><span className="font-mono text-muted-foreground">If beats</span><br />{ev.ifBeat}</p>
+                          <p><span className="font-mono text-muted-foreground">If misses</span><br />{ev.ifMiss}</p>
                         </div>
                       </div>
                     );
@@ -203,11 +200,11 @@ function AiSection() {
               {a.events.filter((ev) => "signal" in ev).length > 4 && (
                 <button
                   onClick={() => setShowAllCalls((v) => !v)}
-                  className="mt-3 w-full rounded-lg border px-4 py-2.5 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground sm:w-auto"
+                  className="mt-3 w-full rounded-lg border px-4 py-2.5 font-mono text-xs text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground sm:w-auto"
                 >
                   {showAllCalls
-                    ? "↑ Show less"
-                    : `↓ Show ${a.events.filter((ev) => "signal" in ev).length - 4} more news`}
+                    ? "Show less"
+                    : `Show ${a.events.filter((ev) => "signal" in ev).length - 4} more news`}
                 </button>
               )}
             </div>
@@ -217,8 +214,8 @@ function AiSection() {
               Generated {new Date(a.generatedAt).toLocaleString("en-GB", { timeZone: "America/New_York" })} New York
             </p>
             <button onClick={regenerate} disabled={busy}
-              className="rounded-lg border px-3 py-1.5 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground disabled:opacity-50 sm:px-4 sm:py-2">
-              {busy ? "Analysing…" : "↺ Re-analyse"}
+              className="rounded-lg border px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground disabled:opacity-50 sm:px-4 sm:py-2">
+              {busy ? "Analysing…" : "Re-analyse"}
             </button>
           </div>
         </div>
@@ -230,11 +227,11 @@ function AiSection() {
 function AiSignalCard({ label, name, s }: { label: string; name: string; s: { action: "BUY" | "SELL" | "NEUTRAL"; confidence: number; reasoning: string; entry: number | null; stopLoss: number | null; takeProfit: number | null } }) {
   const color = s.action === "BUY" ? "text-bull" : s.action === "SELL" ? "text-bear" : "text-muted-foreground";
   return (
-    <div className="rounded-2xl border bg-card p-4 transition-colors hover:border-gold/40 sm:rounded-3xl sm:p-8">
+    <div className="rounded-2xl border bg-card p-4 transition-colors sm:rounded-3xl sm:p-8">
       <p className="font-mono text-xs tracking-widest text-muted-foreground">{label}</p>
       <p className="mt-1 text-sm text-muted-foreground">{name}</p>
       <div className="mt-4 flex items-baseline gap-3 sm:mt-6 sm:gap-4">
-        <p className={`text-3xl font-bold tracking-[-0.04em] sm:text-5xl ${color}`}>{s.action}</p>
+        <p className={`text-3xl font-medium tracking-[-0.02em] sm:text-5xl ${color}`}>{s.action}</p>
         <p className="font-mono text-lg text-muted-foreground sm:text-xl">{s.confidence}%</p>
       </div>
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:mt-4">{s.reasoning}</p>
@@ -251,7 +248,7 @@ function Heading({ k, title, sub }: { k: string; title: string; sub: string }) {
     <div className="mb-6 flex flex-col gap-2 sm:mb-8 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
       <div>
         <p className="font-mono text-xs text-muted-foreground">{k}</p>
-        <h2 className="mt-1 text-2xl font-bold tracking-[-0.03em] sm:mt-2 sm:text-4xl">{title}</h2>
+        <h2 className="mt-1 text-2xl font-medium tracking-[-0.02em] sm:mt-2 sm:text-4xl">{title}</h2>
       </div>
       <p className="max-w-xs text-sm text-muted-foreground sm:text-right">{sub}</p>
     </div>
@@ -262,12 +259,12 @@ function SignalCard({ s, name }: { s: Signal; name: string }) {
   const color = s.action === "BUY" ? "text-bull" : s.action === "SELL" ? "text-bear" : "text-muted-foreground";
   const r = 54, c = 2 * Math.PI * r;
   return (
-    <div className="group rounded-2xl border bg-card p-4 transition-colors hover:border-gold/40 sm:rounded-3xl sm:p-8">
+    <div className="group rounded-2xl border bg-card p-4 transition-colors sm:rounded-3xl sm:p-8">
       <div className="flex items-start justify-between gap-3 sm:gap-4">
         <div>
           <p className="font-mono text-xs tracking-widest text-muted-foreground">XAUUSD</p>
           <p className="mt-1 text-sm text-muted-foreground">{name}</p>
-          <p key={s.action} className={`mt-4 animate-blur-in text-4xl font-bold tracking-[-0.04em] sm:mt-8 sm:text-7xl ${color}`}>{s.action}</p>
+          <p key={s.action} className={`mt-4 animate-blur-in text-4xl font-medium tracking-[-0.02em] sm:mt-8 sm:text-7xl ${color}`}>{s.action}</p>
           <p className="mt-2 text-sm text-muted-foreground sm:mt-3">
             {s.drivers ? `Based on ${s.drivers} red-news release${s.drivers === 1 ? "" : "s"} in the last 24h` : "No released red news in the last 24h"}
           </p>
@@ -283,7 +280,7 @@ function SignalCard({ s, name }: { s: Signal; name: string }) {
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="font-mono text-lg sm:text-3xl">{s.confidence}%</span>
-            <span className="text-[9px] uppercase tracking-widest text-muted-foreground sm:text-[10px]">confidence</span>
+            <span className="text-[9px] text-muted-foreground sm:text-[10px]">confidence</span>
           </div>
         </div>
       </div>

@@ -67,7 +67,7 @@ function Desk() {
             <button
               key={t}
               onClick={() => setTf(t)}
-              className={`flex-1 rounded-full py-2 font-mono text-xs uppercase tracking-widest transition-colors ${
+              className={`flex-1 rounded-full py-2 font-mono text-xs transition-colors ${
                 tf === t ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
               }`}
             >

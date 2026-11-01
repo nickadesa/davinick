@@ -49,7 +49,7 @@ function HistoryPage() {
       <SiteNav />
       <main className="mx-auto max-w-6xl px-5 pb-24 sm:px-10">
         <section className="pt-16 pb-10 sm:pt-24 sm:pb-14">
-          <h1 className="animate-blur-in text-4xl font-bold tracking-[-0.04em] sm:text-6xl">Signal history.<br /><span className="text-muted-foreground">Honest scorecard.</span></h1>
+          <h1 className="animate-blur-in text-4xl font-medium tracking-[-0.02em] sm:text-6xl">Signal history.<br /><span className="text-muted-foreground">Honest scorecard.</span></h1>
           <p className="mt-6 max-w-lg text-muted-foreground">Every signal is stored when a red-news figure comes out, then checked against the price 1 hour and 4 hours later. Wins are judged on the 4-hour move.</p>
         </section>
 
@@ -79,7 +79,7 @@ function HistoryPage() {
               <div key={r.id} className="grid grid-cols-[150px_90px_80px_1fr_110px_90px_90px_80px] items-center gap-4 border-b px-6 py-4 text-sm last:border-0">
                 <span className="font-mono text-muted-foreground">{d.toLocaleString("en-GB", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/New_York" })}</span>
                 <span className="font-mono">{r.asset}</span>
-                <span className={`font-bold ${r.action === "BUY" ? "text-bull" : r.action === "SELL" ? "text-bear" : "text-muted-foreground"}`}>{r.action} <span className="font-mono text-xs font-normal text-muted-foreground">{r.confidence}%</span></span>
+                <span className={`font-medium ${r.action === "BUY" ? "text-bull" : r.action === "SELL" ? "text-bear" : "text-muted-foreground"}`}>{r.action} <span className="font-mono text-xs font-normal text-muted-foreground">{r.confidence}%</span></span>
                 <span className="truncate">{r.trigger_title}</span>
                 <span className="font-mono">{r.entry?.toFixed(2) ?? "—"}</span>
                 <Move v={m1} />

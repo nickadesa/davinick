@@ -61,7 +61,7 @@ function Profile() {
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-muted">
               <span className="text-3xl">👤</span>
             </div>
-            <h1 className="mt-6 text-2xl font-bold">{user.email}</h1>
+            <h1 className="mt-6 text-2xl font-medium">{user.email}</h1>
             <p className="mt-1 text-sm text-muted-foreground">Signed in</p>
             <button onClick={signOut} className="mt-6 rounded-full border px-5 py-2 text-sm hover:bg-accent">
               Sign out
@@ -69,7 +69,7 @@ function Profile() {
           </div>
         ) : (
           <div>
-            <h1 className="text-2xl font-bold">{mode === "signin" ? "Sign in" : "Create account"}</h1>
+            <h1 className="text-2xl font-medium">{mode === "signin" ? "Sign in" : "Create account"}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {mode === "signin" ? "Welcome back." : "Join TOPTIERclub."}
             </p>
