@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { computeSignal, aiRefreshPlan, type Asset, type AiStage } from "./signals";
+import { computeSignal, aiRefreshPlan, aiIsOutdated, type Asset, type AiStage } from "./signals";
 import { currentPrice, fetchCandles, recordSignal, loadCalendar, priceAt, PRICE_SYMBOLS, publicDb, type ChartSymbol, type Timeframe } from "./market.server";
 import { runAiAnalysis, type AiAnalysis } from "./ai.server";
 
@@ -47,7 +47,8 @@ export const getAiAnalysis = createServerFn({ method: "GET" })
       const { data: cached } = await supabaseAdmin.from("ai_analysis").select("payload, created_at").eq("id", 1).maybeSingle();
       const plan = aiRefreshPlan(events.map((e) => e.time), cached ? new Date(cached.created_at).getTime() : null, Date.now());
       stage = plan.stage;
-      if (!data?.refresh && !plan.refresh && cached) {
+      const outdated = cached ? Date.now() - new Date(cached.created_at).getTime() > 3600e3 && aiIsOutdated(((cached.payload as unknown as AiAnalysis).events ?? []).map((e) => e.time), events.map((e) => e.time)) : true;
+      if (!data?.refresh && !plan.refresh && !outdated && cached) {
         return { analysis: cached.payload as unknown as AiAnalysis, error: null, stage };
       }
       let xauusd: number | null = null;
