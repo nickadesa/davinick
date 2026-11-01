@@ -47,10 +47,10 @@ function Desk() {
       <main className="mx-auto max-w-3xl px-5 pb-32 sm:px-8">
         <section className="pt-12 pb-6 sm:pt-16">
           <p className="font-mono text-sm text-muted-foreground">XAU/USD · Gold Spot</p>
-          <p className="mt-2 font-mono text-5xl sm:text-6xl">{last?.toFixed(2) ?? "—"}</p>
+          <p className="mt-2 text-5xl font-medium tracking-[-0.02em] tabular-nums sm:text-6xl">{last?.toFixed(2) ?? "—"}</p>
           {change != null && changePct != null && (
             <p className={`mt-2 font-mono text-sm ${up ? "text-bull" : "text-bear"}`}>
-              {up ? "▲" : "▼"} {change.toFixed(2)} ({changePct.toFixed(2)}%)
+              {up ? "▲" : "▼"} {change.toFixed(2)} ({changePct.toFixed(2)}%) <span className="text-muted-foreground">vs start of {tf}</span>
             </p>
           )}
         </section>
@@ -59,16 +59,17 @@ function Desk() {
         {candles.length > 0 ? (
           <LineChart candles={candles} up={up} />
         ) : (
-          <div className="h-64 animate-pulse rounded-2xl bg-muted/30 sm:h-80" />
+          <div className="h-64 rounded-2xl border bg-card sm:h-80" />
         )}
 
-        <div className="mt-6 flex justify-between gap-1">
+        <div role="tablist" aria-label="Timeframe" className="mt-4 flex gap-1 rounded-xl border p-1">
           {TIMEFRAMES.map((t) => (
             <button
               key={t}
               onClick={() => setTf(t)}
-              className={`flex-1 rounded-full py-2 font-mono text-xs transition-colors ${
-                tf === t ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+              role="tab" aria-selected={tf === t}
+              className={`h-9 flex-1 rounded-lg font-mono text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                tf === t ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {t}
@@ -91,18 +92,22 @@ function LineChart({ candles, up }: { candles: Candle[]; up: boolean }) {
   const y = (p: number) => pad + ((max - p) / range) * (H - pad * 2);
   const step = (W - pad * 2) / Math.max(1, candles.length - 1);
   const points = candles.map((c, i) => `${pad + i * step},${y(c.c)}`).join(" ");
-  const color = up ? "#22c55e" : "#ef4444";
+  const color = up ? "var(--bull)" : "var(--bear)";
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-64 w-full sm:h-80" preserveAspectRatio="none">
+    <div className="rounded-2xl border bg-card p-4 sm:p-6">
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-full sm:h-80" preserveAspectRatio="none">
+      {[0.25, 0.5, 0.75].map((f) => <line key={f} x1="0" x2={W} y1={H * f} y2={H * f} stroke="var(--border)" strokeWidth="1" vectorEffect="non-scaling-stroke" />)}
       <polyline
         fill="none"
         stroke={color}
-        strokeWidth="2.5"
+        strokeWidth="2" vectorEffect="non-scaling-stroke"
         strokeLinejoin="round"
         strokeLinecap="round"
         points={points}
       />
     </svg>
+    <div className="mt-2 flex justify-between font-mono text-xs text-muted-foreground"><span>low {min.toFixed(2)}</span><span>high {max.toFixed(2)}</span></div>
+    </div>
   );
 }

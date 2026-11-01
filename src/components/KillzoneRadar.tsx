@@ -31,14 +31,13 @@ export function KillzoneRadar() {
   const next = now === null ? null : ZONES.filter((z) => z.kill && !inZone(now, z.start, z.end)).sort((a, b) => until(now, a.start) - until(now, b.start))[0];
 
   return (
-    <section className="mt-10 rounded-3xl border border-border/60 bg-card/60 p-5 shadow-[inset_0_1px_0_0_color-mix(in_oklab,var(--foreground)_8%,transparent)] backdrop-blur-xl sm:p-8">
+    <section className="mt-10 rounded-2xl border bg-card p-5 sm:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-mono text-xs tracking-widest text-muted-foreground">KILLZONE RADAR · NEW YORK TIME</p>
-          <p className="mt-2 flex items-center gap-3 text-2xl font-semibold tracking-[-0.02em] sm:text-3xl">
-            <span className="relative flex h-3 w-3">
-              {liveKill && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold opacity-60 motion-reduce:animate-none" />}
-              <span className={`relative inline-flex h-3 w-3 rounded-full ${liveKill ? "bg-gold" : "bg-muted-foreground/40"}`} />
+          <p className="font-mono text-xs text-muted-foreground">Killzones · New York time</p>
+          <p className="mt-2 flex items-center gap-3 text-xl font-medium sm:text-2xl">
+            <span className="relative flex h-2 w-2">
+              <span className={`relative inline-flex h-2 w-2 rounded-full ${liveKill ? "bg-gold" : "bg-muted-foreground/40"}`} />
             </span>
             {now === null ? "—" : liveKill ? `${liveKill.name} is live` : "Quiet hours"}
           </p>
@@ -49,13 +48,13 @@ export function KillzoneRadar() {
       </div>
 
       {/* 24h track */}
-      <div className="relative mt-8 h-10 rounded-full bg-muted/30">
+      <div className="relative mt-6 h-8 rounded-lg bg-muted">
         {ZONES.map((z) => {
           const segs = z.start < z.end ? [[z.start, z.end]] : [[z.start, 1440], [0, z.end]];
           const on = active.includes(z);
           return segs.map(([s, e], i) => (
             <div key={z.name + i} title={z.name}
-              className={`absolute top-1 bottom-1 rounded-full transition-opacity duration-500 ${z.kill ? "bg-gold" : "bg-foreground/15"} ${z.kill ? (on ? "opacity-90" : "opacity-35") : ""}`}
+              className={`absolute top-1 bottom-1 rounded-md transition-opacity duration-300 ${z.kill ? "bg-gold" : "bg-foreground/15"} ${z.kill ? (on ? "opacity-100" : "opacity-30") : ""}`}
               style={{ left: `${(s! / 1440) * 100}%`, width: `${((e! - s!) / 1440) * 100}%` }} />
           ));
         })}
@@ -63,15 +62,15 @@ export function KillzoneRadar() {
           <div className="absolute -top-1 -bottom-1 w-0.5 rounded-full bg-foreground transition-[left] duration-700" style={{ left: `${(now / 1440) * 100}%` }} />
         )}
       </div>
-      <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground">
+      <div className="mt-2 flex justify-between font-mono text-xs text-muted-foreground">
         {[0, 6, 12, 18, 24].map((h) => <span key={h}>{String(h).padStart(2, "0")}</span>)}
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4">
         {ZONES.map((z) => {
           const on = active.includes(z);
           return (
-            <div key={z.name} className={`rounded-2xl border p-4 transition-colors duration-300 ${on ? "border-gold/50 bg-gold/10" : "border-border/60"}`}>
+            <div key={z.name} className={`rounded-xl border p-4 transition-colors duration-300 ${on ? "bg-secondary" : ""}`}>
               <p className={`text-sm font-medium ${on ? "text-gold" : ""}`}>{z.name}</p>
               <p className="mt-1 font-mono text-xs text-muted-foreground">{hhmm(z.start)}–{hhmm(z.end)}</p>
             </div>
