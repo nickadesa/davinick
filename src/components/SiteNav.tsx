@@ -29,7 +29,7 @@ export function SiteNav() {
   return (
     <header className="glass sticky top-0 z-40 w-full border-b">
       <nav aria-label="Main navigation" className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-5 sm:px-10">
-        <Link to="/" aria-label="TOPTIERclub home" className="shrink-0 text-xl font-bold sm:text-2xl">TOPTIER<span className="font-normal text-muted-foreground">club</span></Link>
+        <Link to="/" aria-label="TOPTIERclub home" className="shrink-0 text-xl font-medium sm:text-2xl">TOPTIER<span className="font-normal text-muted-foreground">club</span></Link>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2 border border-border" aria-label="Open navigation menu">

@@ -65,18 +65,18 @@
 }
 
 .dark {
-  --background: oklch(0.13 0 0);
-  --foreground: oklch(0.97 0 0);
-  --card: oklch(0.17 0 0);
+  --background: oklch(0.14 0.004 80);
+  --foreground: oklch(0.95 0.006 85);
+  --card: oklch(0.175 0.005 80);
   --card-foreground: oklch(0.97 0 0);
-  --popover: oklch(0.17 0 0);
+  --popover: oklch(0.175 0.005 80);
   --popover-foreground: oklch(0.97 0 0);
   --primary: oklch(0.97 0 0);
   --primary-foreground: oklch(0.13 0 0);
-  --secondary: oklch(0.21 0 0);
+  --secondary: oklch(0.215 0.005 80);
   --secondary-foreground: oklch(0.97 0 0);
-  --muted: oklch(0.21 0 0);
-  --muted-foreground: oklch(0.62 0 0);
+  --muted: oklch(0.215 0.005 80);
+  --muted-foreground: oklch(0.66 0.008 80);
   --accent: oklch(0.24 0 0);
   --accent-foreground: oklch(0.97 0 0);
   --destructive: oklch(0.63 0.21 25);
@@ -85,14 +85,15 @@
   --input: oklch(1 0 0 / 12%);
   --ring: oklch(0.8 0.13 85);
   --gold: oklch(0.8 0.13 85);
-  --bull: oklch(0.76 0.17 150);
-  --bear: oklch(0.65 0.21 25);
+  --bull: oklch(0.74 0.12 155);
+  --bear: oklch(0.66 0.16 28);
   --faint: oklch(1 0 0 / 4%);
 }
 
 @layer base {
   * { border-color: var(--color-border); }
   body {
+    font-variant-numeric: tabular-nums;
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
@@ -101,12 +102,12 @@
 }
 
 @keyframes blur-in {
-  from { opacity: 0; filter: blur(12px); transform: translateY(12px); }
+  from { opacity: 0; filter: blur(4px); transform: translateY(6px); }
   to { opacity: 1; filter: blur(0); transform: none; }
 }
 @keyframes pulse-dot { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
 
-@utility animate-blur-in { animation: blur-in 0.9s cubic-bezier(.2,.7,.2,1) both; }
+@utility animate-blur-in { animation: blur-in 0.5s cubic-bezier(.2,.7,.2,1) both; }
 @utility animate-pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
 @utility glass {
   background: color-mix(in oklab, var(--card) 70%, transparent);
