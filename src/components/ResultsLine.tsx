@@ -12,7 +12,7 @@ export function ResultsLine({ points }: { points: ResultPoint[] }) {
   const x = (i: number) => P + (i / (points.length - 1)) * (W - 2 * P);
   const y = (v: number) => P + (1 - (v - min) / span) * (H - 2 * P);
   const path = (k: keyof ResultPoint) => points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p[k]).toFixed(1)}`).join(" ");
-  const last = points[points.length - 1];
+  const last = points[points.length - 1]!;
   const f = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
   return (
     <div className="rounded-2xl border bg-card p-6 sm:p-8">
