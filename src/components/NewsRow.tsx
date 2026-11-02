@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { eventBias, type Asset, type Bias, type NewsEvent } from "@/lib/signals";
 
 export const toneText: Record<Bias, string> = { bullish: "text-bull", bearish: "text-bear", neutral: "text-muted-foreground" };
@@ -44,7 +45,6 @@ export function NewsList({ events, rawEvents, now }: { events: NewsEvent[]; rawE
   return <NewsListInner events={events} rawEvents={rawEvents ?? events} now={now} />;
 }
 
-import { useState } from "react";
 function NewsListInner({ events, rawEvents, now }: { events: NewsEvent[]; rawEvents: NewsEvent[]; now: Date | null }) {
   const [open, setOpen] = useState<string | null>(null);
   return (
