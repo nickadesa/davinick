@@ -1,10 +1,14 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
-import { computeSignal, eventBias, type Asset, type Bias, type NewsEvent, type Signal } from "@/lib/signals";
-import { getAiAnalysis, getCalendar, saveActual } from "@/lib/market.functions";
+import { computeSignal, eventBias, type NewsEvent } from "@/lib/signals";
+import { getAiAnalysis, getCalendar } from "@/lib/market.functions";
 import { SiteNav } from "@/components/SiteNav";
+import { NewsList, toneText } from "@/components/NewsRow";
+import { NextReleaseCard } from "@/components/NextReleaseCard";
+import { SignalSummaryCard } from "@/components/SignalSummaryCard";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const calendarQuery = queryOptions({ queryKey: ["calendar"], queryFn: () => getCalendar(), staleTime: 60_000 });
 const aiQuery = queryOptions({ queryKey: ["ai-analysis"], queryFn: () => getAiAnalysis({ data: {} }), staleTime: 60_000, refetchInterval: 60_000 });
@@ -14,19 +18,17 @@ export const Route = createFileRoute("/")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "TOPTIERclub" },
-      { name: "description", content: "High-impact economic news analysed into BUY/SELL bias with a confidence score for XAUUSD." },
+      { title: "TOPTIERclub — gold news signals" },
+      { name: "description", content: "High-impact USD news scored against forecast and turned into a gold (XAUUSD) bias with a confidence score." },
       { property: "og:title", content: "TOPTIERclub — gold news signals" },
       { property: "og:description", content: "Red-folder news in, confidence-scored gold bias out." },
     ],
   }),
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(calendarQuery), context.queryClient.ensureQueryData(aiQuery)]),
-  errorComponent: () => <div className="p-20 text-center text-muted-foreground">The calendar couldn't load. Try again shortly.</div>,
+  errorComponent: () => <div className="p-20 text-center text-muted-foreground">The calendar couldn't load. Try again shortly</div>,
   notFoundComponent: () => <div className="p-20 text-center text-muted-foreground">Not found</div>,
   component: Index,
 });
-
-const toneText: Record<Bias, string> = { bullish: "text-bull", bearish: "text-bear", neutral: "text-muted-foreground" };
 
 function useNow() {
   const [now, setNow] = useState<Date | null>(null);
@@ -37,6 +39,20 @@ function useNow() {
   }, []);
   return now;
 }
+
+const steps = [
+  { n: "1", title: "News is released", body: "Each high-impact USD figure lands on the calendar in New York time. Actuals fill in from official data minutes after release" },
+  { n: "2", title: "Figure is scored against forecast", body: "The surprise versus forecast is weighed by how much that release usually moves gold" },
+  { n: "3", title: "Bias and confidence are published", body: "You get BUY, SELL or NEUTRAL with a confidence that never reaches 100%, and the reason behind it" },
+];
+
+const faqs = [
+  { q: "Where does the news come from", a: "The weekly calendar comes from Forex Factory. Released figures for CPI, payrolls, jobless claims, retail sales, GDP and PCE are filled from FRED, the St. Louis Fed's official data service" },
+  { q: "How is confidence worked out", a: "Each release in the last 24 hours is scored by how far the actual landed from forecast and how strongly that release type usually moves gold. The scores are combined into one bias" },
+  { q: "Why does confidence never reach 100%", a: "News moves markets in ways no model can promise. Capping confidence keeps the number honest" },
+  { q: "When does the AI re-analyse", a: "Twice per red-news event: 24 hours before and 15 minutes before release. It also re-runs when a new week's calendar appears. You can re-analyse by hand at any time" },
+  { q: "Is this financial advice", a: "No. Signals are educational analysis of economic news. Trading carries risk" },
+];
 
 function Index() {
   const { data } = useSuspenseQuery(calendarQuery);
@@ -52,79 +68,113 @@ function Index() {
     return events.filter((e) => e.id in what || (new Date(e.time).getTime() >= since && new Date(e.time) <= now));
   }, [events, now, what]);
   const gold = computeSignal(recent, "XAUUSD");
-  const [open, setOpen] = useState<string | null>(null);
   const labEvents = events.filter((e) => e.forecast !== null && (!now || new Date(e.time) >= new Date(now.getTime() - 24 * 3600e3))).slice(0, 4);
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="min-h-screen">
       <SiteNav />
 
-      <main className="relative mx-auto max-w-6xl px-4 pb-8 sm:px-10">
-        <section className="pt-8 pb-8 sm:pt-28 sm:pb-20">
-          <h1 className="animate-blur-in text-4xl font-medium leading-[0.95] tracking-[-0.02em] sm:text-7xl">
-            Read the news.<br /><span className="text-muted-foreground">Not the noise.</span>
-          </h1>
-          <p className="mt-4 font-mono text-[10px] text-muted-foreground sm:mt-6 sm:text-xs">XAUUSD · gold spot · red-folder news only</p>
-          <p className="mt-5 max-w-lg text-base text-muted-foreground animate-blur-in [animation-delay:200ms] sm:mt-8 sm:text-lg">
-            Every high-impact release is scored against forecast and turned into a directional bias —
-            with an honest confidence, never a guarantee.
-          </p>
-          <NextNews events={events} now={now} />
-        </section>
-
-        <section id="signals" className="scroll-mt-24">
-          <SignalCard s={gold} name="Gold Spot / USD" />
-        </section>
-
-        <AiSection />
-
-        <section id="news" className="mt-16 scroll-mt-24 sm:mt-24">
-          <Heading k="02" title="This week's red news" sub="USD high-impact events, New York time (UTC-4). Click a released event to see why it moves the market." />
-          {data.error && <p className="mb-4 text-sm text-bear">{data.error}</p>}
-          <div className="divide-y rounded-2xl border">
-            {events.length === 0 && <p className="px-4 py-10 text-center text-sm text-muted-foreground">No red-folder USD events this week.</p>}
-            {events.map((e) => (
-              <NewsRow key={e.id} e={data.events.find((x) => x.id === e.id)!} now={now} open={open === e.id} onToggle={() => setOpen(open === e.id ? null : e.id)} />
-            ))}
+      <main className="mx-auto max-w-6xl px-5 pb-8 sm:px-10">
+        <section className="animate-blur-in grid grid-cols-1 items-center gap-10 pt-10 pb-16 sm:pt-20 sm:pb-24 lg:grid-cols-[1fr_1.1fr]">
+          <div>
+            <h1 className="text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-6xl">
+              Gold bias from every red-news release
+            </h1>
+            <p className="mt-6 max-w-md text-base text-muted-foreground sm:text-lg">
+              High-impact USD figures are scored against forecast and turned into a BUY, SELL or NEUTRAL call for XAUUSD, with an honest confidence
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link to="/desk" className="rounded-lg bg-gold px-5 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">Open the desk</Link>
+              <Link to="/calendar" className="text-sm text-muted-foreground transition-colors hover:text-foreground">See this week's news</Link>
+            </div>
           </div>
+          <NextReleaseCard events={events} now={now} />
         </section>
 
-        <section id="lab" className="mt-16 scroll-mt-24 sm:mt-24">
-          <Heading k="03" title="What-if lab" sub="Drag a number and watch the signals react. Nothing is saved." />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-            {labEvents.length === 0 && <p className="rounded-2xl border px-4 py-8 text-center text-sm text-muted-foreground sm:col-span-2">No upcoming red-news figures with a forecast to play with right now.</p>}
+        <section aria-labelledby="how" className="border-t py-16 sm:py-24">
+          <h2 id="how" className="text-2xl font-medium tracking-[-0.02em] sm:text-4xl">How a signal is made</h2>
+          <ol className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-3">
+            {steps.map((s) => (
+              <li key={s.n}>
+                <p className="font-mono text-sm text-gold">{s.n}</p>
+                <p className="mt-3 text-lg font-medium">{s.title}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{s.body}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section aria-labelledby="results" className="border-t py-16 sm:py-24">
+          <Heading id="results" title="Current signals" sub="Live from this week's calendar. Updates as figures are released" />
+          <SignalSummaryCard
+            label="XAUUSD · news score"
+            action={gold.action}
+            confidence={gold.confidence}
+            reason={gold.drivers ? `Based on ${gold.drivers} red-news release${gold.drivers === 1 ? "" : "s"} in the last 24 hours` : "No red news released in the last 24 hours"}
+          />
+          <AiSection />
+        </section>
+
+        <section aria-labelledby="news" className="border-t py-16 sm:py-24">
+          <Heading id="news" title="This week's red news" sub="USD high-impact events, New York time. Tap a released event to see why it moves gold" />
+          {data.error && <p className="mb-4 text-sm text-bear">{data.error}</p>}
+          <NewsList events={events} rawEvents={data.events} now={now} />
+        </section>
+
+        <section aria-labelledby="lab" className="border-t py-16 sm:py-24">
+          <Heading id="lab" title="What-if lab" sub="Drag a number and watch the signal react. Nothing is saved" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {labEvents.length === 0 && <p className="rounded-2xl border px-4 py-8 text-center text-sm text-muted-foreground sm:col-span-2">No upcoming figures with a forecast to try right now</p>}
             {labEvents.map((e) => {
               const fc = e.forecast as number;
               const v = what[e.id] ?? e.actual ?? fc;
               const span = Math.max(Math.abs(fc) * 0.6, 0.3);
+              const b = eventBias({ ...e, actual: v }, "XAUUSD");
               return (
-                <div key={e.id} className="rounded-2xl border bg-card p-5">
-                  <div className="flex items-baseline justify-between">
+                <div key={e.id} className="rounded-2xl border bg-card p-6">
+                  <div className="flex items-baseline justify-between gap-4">
                     <span className="font-medium">{e.title}</span>
-                    <span className="font-mono text-xl sm:text-2xl">{fmt(v)}{e.unit}</span>
+                    <span className="font-mono text-xl">{fmt(v)}{e.unit}</span>
                   </div>
-                  <input
-                    type="range" className="mt-4 w-full accent-gold"
+                  <input type="range" aria-label={`${e.title} what-if value`} className="mt-4 w-full accent-gold"
                     min={fc - span} max={fc + span} step={span / 50} value={v}
-                    onChange={(ev) => setWhat({ ...what, [e.id]: Number(ev.target.value) })}
-                  />
+                    onChange={(ev) => setWhat({ ...what, [e.id]: Number(ev.target.value) })} />
                   <div className="mt-2 flex justify-between font-mono text-xs text-muted-foreground">
-                    <span>forecast {fc}{e.unit}</span>
-                    <span className={toneText[eventBias({ ...e, actual: v }, "XAUUSD")]}>gold {eventBias({ ...e, actual: v }, "XAUUSD")}</span>
+                    <span>Forecast {fc}{e.unit}</span>
+                    <span className={toneText[b]}>Gold {b}</span>
                   </div>
                 </div>
               );
             })}
           </div>
           {Object.keys(what).length > 0 && (
-            <button onClick={() => setWhat({})} className="mt-4 font-mono text-xs text-muted-foreground hover:text-foreground">
-              Reset to real data
-            </button>
+            <button onClick={() => setWhat({})} className="mt-4 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground">Reset to real data</button>
           )}
         </section>
 
-        <footer className="mt-20 border-t py-8 text-xs text-muted-foreground sm:mt-32 sm:py-10">
-          Calendar from Forex Factory. Signals are educational analysis of economic news, not financial advice. Trading carries risk.
+        <section aria-labelledby="faq" className="border-t py-16 sm:py-24">
+          <h2 id="faq" className="text-2xl font-medium tracking-[-0.02em] sm:text-4xl">Questions</h2>
+          <Accordion type="single" collapsible className="mt-8 max-w-3xl">
+            {faqs.map((f) => (
+              <AccordionItem key={f.q} value={f.q}>
+                <AccordionTrigger className="text-base font-medium">{f.q}</AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </section>
+
+        <section className="border-t py-16 sm:py-24">
+          <h2 className="max-w-2xl text-3xl font-medium tracking-[-0.02em] sm:text-5xl">Plan the next release on the desk</h2>
+          <p className="mt-4 max-w-md text-muted-foreground">Chart, fib levels, killzones and a lot-size calculator for XAUUSD</p>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link to="/desk" className="rounded-lg bg-gold px-5 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">Open the desk</Link>
+            <Link to="/history" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Review past signals</Link>
+          </div>
+        </section>
+
+        <footer className="border-t py-8 text-xs text-muted-foreground sm:py-10">
+          Calendar from Forex Factory, released figures from FRED. Signals are educational analysis of economic news, not financial advice. Trading carries risk.
         </footer>
       </main>
     </div>
