@@ -1,17 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { ChevronRight, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/hooks/use-theme";
 import { SiteNav } from "@/components/SiteNav";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
-    meta: [{ title: "Profile — TOPTIERclub" }],
+    meta: [
+      { title: "Profile — TOPTIERclub" },
+      { name: "description", content: "Sign in, switch theme and find every TOPTIERclub page." },
+      { property: "og:title", content: "Profile — TOPTIERclub" },
+      { property: "og:description", content: "Your TOPTIERclub account and settings." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
   }),
   component: Profile,
 });
 
 function Profile() {
+  const { dark, toggle } = useTheme();
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +45,7 @@ function Profile() {
       : await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) setMessage(error.message);
-    else if (mode === "signup") setMessage("Check your email to confirm your account.");
+    else if (mode === "signup") setMessage("Check your email to confirm your account");
     else setMessage(null);
   }
 
@@ -58,10 +69,7 @@ function Profile() {
       <main className="mx-auto max-w-lg px-5 py-12">
         {user ? (
           <div className="text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-              <span className="text-3xl">👤</span>
-            </div>
-            <h1 className="mt-6 text-2xl font-medium">{user.email}</h1>
+            <h1 className=" text-2xl font-medium">{user.email}</h1>
             <p className="mt-1 text-sm text-muted-foreground">Signed in</p>
             <button onClick={signOut} className="mt-6 rounded-full border px-5 py-2 text-sm hover:bg-accent">
               Sign out
@@ -71,7 +79,7 @@ function Profile() {
           <div>
             <h1 className="text-2xl font-medium">{mode === "signin" ? "Sign in" : "Create account"}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {mode === "signin" ? "Welcome back." : "Join TOPTIERclub."}
+              {mode === "signin" ? "Use your email or Google account" : "Create a free account with your email"}
             </p>
 
             <button
@@ -109,7 +117,7 @@ function Profile() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-full bg-gold py-3 font-medium text-black disabled:opacity-50"
+                className="w-full rounded-full bg-gold py-3 font-medium text-primary-foreground disabled:opacity-50"
               >
                 {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Sign up"}
               </button>
@@ -125,6 +133,17 @@ function Profile() {
             </button>
           </div>
         )}
+        <section aria-label="More" className="mt-12 divide-y rounded-2xl border">
+          {([["/", "Signals and news"], ["/calendar", "Calendar"], ["/history", "History"], ["/desk", "Desk"]] as const).map(([to, label]) => (
+            <Link key={to} to={to} className="flex items-center justify-between px-4 py-4 text-sm transition-colors hover:bg-faint">
+              {label}<ChevronRight className="size-4 text-muted-foreground" strokeWidth={1.5} />
+            </Link>
+          ))}
+          <button onClick={toggle} className="flex w-full items-center justify-between px-4 py-4 text-left text-sm transition-colors hover:bg-faint">
+            {dark ? "Light mode" : "Dark mode"}
+            {dark ? <Sun className="size-4 text-muted-foreground" strokeWidth={1.5} /> : <Moon className="size-4 text-muted-foreground" strokeWidth={1.5} />}
+          </button>
+        </section>
       </main>
     </div>
   );
