@@ -3,6 +3,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { getHistory } from "@/lib/market.functions";
 import { outcome, type Action, type Outcome } from "@/lib/signals";
 import { SiteNav } from "@/components/SiteNav";
+import { ResultsLine, type ResultPoint } from "@/components/ResultsLine";
 
 const historyQuery = queryOptions({ queryKey: ["history"], queryFn: () => getHistory() });
 
@@ -37,35 +38,32 @@ function HistoryPage() {
     p4: r.price_4h === null ? null : Number(r.price_4h),
   }));
 
-  const stats = (["XAUUSD"] as const).map((asset) => {
-    const scored = rows.filter((r) => r.asset === asset).map((r) => outcome(r.action as Action, r.entry, r.p4));
-    const wins = scored.filter((o) => o === "win").length;
-    const done = scored.filter((o) => o === "win" || o === "loss").length;
-    return { asset, wins, done, rate: done ? Math.round((wins / done) * 100) : null };
-  });
+  const scored = [...rows].filter((r) => r.asset === "XAUUSD" && r.entry !== null && r.p4 !== null)
+    .sort((x, y) => new Date(x.created_at).getTime() - new Date(y.created_at).getTime());
+  let sig = 0, ref = 0;
+  const points: ResultPoint[] = [{ signal: 0, reference: 0 }];
+  for (const r of scored) {
+    const m = pct(r.entry, r.p4) ?? 0;
+    const dir = r.action === "BUY" ? 1 : r.action === "SELL" ? -1 : 0;
+    sig += dir * m; ref += m;
+    points.push({ signal: sig, reference: ref });
+  }
 
   return (
     <div className="min-h-screen">
       <SiteNav />
       <main className="mx-auto max-w-6xl px-5 pb-24 sm:px-10">
-        <section className="pt-16 pb-10 sm:pt-24 sm:pb-14">
-          <h1 className="animate-blur-in text-4xl font-medium tracking-[-0.02em] sm:text-6xl">Signal history.<br /><span className="text-muted-foreground">Honest scorecard.</span></h1>
-          <p className="mt-6 max-w-lg text-muted-foreground">Every signal is stored when a red-news figure comes out, then checked against the price 1 hour and 4 hours later. Wins are judged on the 4-hour move.</p>
+        <section className="animate-blur-in pt-16 pb-10 sm:pt-24 sm:pb-14">
+          <h1 className="text-4xl font-medium tracking-[-0.02em] sm:text-6xl">Signal history</h1>
+          <p className="mt-6 max-w-lg text-muted-foreground">Every signal is stored when a red-news figure comes out, then checked against the price 1 hour and 4 hours later. The gold line adds up each signal's 4-hour move in its direction. The grey line is the gold price over the same releases</p>
         </section>
 
-        <div className="grid grid-cols-1 gap-5">
-          {stats.map((s) => (
-            <div key={s.asset} className="rounded-3xl border bg-card p-6 sm:p-8">
-              <p className="font-mono text-xs tracking-widest text-muted-foreground">{s.asset} · 4H HIT RATE</p>
-              <p className="mt-4 font-mono text-5xl sm:text-6xl">{s.rate === null ? "—" : `${s.rate}%`}</p>
-              <p className="mt-2 text-sm text-muted-foreground">{s.wins} correct out of {s.done} scored signals</p>
-            </div>
-          ))}
-        </div>
+        <p className="mb-4 font-mono text-sm text-muted-foreground">{rows.length} signal{rows.length === 1 ? "" : "s"} recorded · {scored.length} with a 4-hour result</p>
+        <ResultsLine points={points} />
 
         <div className="mt-12 overflow-x-auto rounded-2xl border">
           <div className="min-w-[780px]">
-          <div className="grid grid-cols-[150px_90px_80px_1fr_110px_90px_90px_80px] gap-4 border-b px-6 py-3 font-mono text-xs uppercase tracking-wider text-muted-foreground">
+          <div className="grid grid-cols-[150px_90px_80px_1fr_110px_90px_90px_80px] gap-4 border-b px-6 py-3 text-xs text-muted-foreground">
             <span>Time (New York)</span><span>Asset</span><span>Signal</span><span>Triggered by</span><span>Entry</span><span>1h</span><span>4h</span><span>Result</span>
           </div>
           {rows.length === 0 && (
@@ -84,13 +82,13 @@ function HistoryPage() {
                 <span className="font-mono">{r.entry?.toFixed(2) ?? "—"}</span>
                 <Move v={m1} />
                 <Move v={m4} />
-                <span className={`font-mono text-xs uppercase ${outcomeStyle[o]}`}>{o === "skip" ? "—" : o}</span>
+                <span className={`font-mono text-xs ${outcomeStyle[o]}`}>{o === "skip" ? "—" : o}</span>
               </div>
             );
           })}
           </div>
         </div>
-        <p className="mt-6 text-xs text-muted-foreground">Past results don't guarantee future performance. Not financial advice.</p>
+        <p className="mt-6 text-xs text-muted-foreground">Past results don't guarantee future performance. Not financial advice</p>
       </main>
     </div>
   );
