@@ -197,25 +197,25 @@ function AiSection() {
   }
 
   return (
-    <section id="ai" className="mt-16 scroll-mt-24 sm:mt-24">
-      <Heading k="AI" title="AI desk analysis" sub="The model reads this week's red news and writes the call — bias, confidence, and levels." />
+    <div className="mt-8">
+      <p className="mb-4 text-sm text-muted-foreground">AI desk analysis</p>
       {data.error && <p className="mb-4 text-sm text-bear">{data.error}</p>}
       {!a ? (
-        <p className="rounded-2xl border px-4 py-10 text-center text-sm text-muted-foreground">No AI analysis yet.</p>
+        <p className="rounded-2xl border px-4 py-10 text-center text-sm text-muted-foreground">No AI analysis yet</p>
       ) : (
         <div className="space-y-4 sm:space-y-5">
           <div className="rounded-2xl border bg-card p-4 sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="font-mono text-xs text-muted-foreground">Weekly outlook</p>
               {data.stage && (
-                <span className="rounded-full border border-gold/40 px-3 py-1 font-mono text-xs text-gold">
+                <span className="font-mono text-xs text-gold">
                   {data.stage === "15m" ? "Final 15m call" : "24h outlook"}
                 </span>
               )}
             </div>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed sm:text-lg">{a.outlook}</p>
           </div>
-          <AiSignalCard label="XAUUSD" name="Gold Spot / USD" s={a.xauusd} />
+          <SignalSummaryCard label="XAUUSD · AI call" action={a.xauusd.action} confidence={a.xauusd.confidence} reason={a.xauusd.reasoning} />
           {a.events.some((ev) => "signal" in ev) && (
             <div>
               <p className="mb-3 font-mono text-xs text-muted-foreground">Pre-release calls</p>
@@ -250,7 +250,7 @@ function AiSection() {
               {a.events.filter((ev) => "signal" in ev).length > 4 && (
                 <button
                   onClick={() => setShowAllCalls((v) => !v)}
-                  className="mt-3 w-full rounded-lg border px-4 py-2.5 font-mono text-xs text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground sm:w-auto"
+                  className="mt-3 w-full rounded-lg border px-4 py-2.5 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground sm:w-auto"
                 >
                   {showAllCalls
                     ? "Show less"
@@ -264,27 +264,12 @@ function AiSection() {
               Generated {new Date(a.generatedAt).toLocaleString("en-GB", { timeZone: "America/New_York" })} New York
             </p>
             <button onClick={regenerate} disabled={busy}
-              className="rounded-lg border px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors hover:border-gold/40 hover:text-foreground disabled:opacity-50 sm:px-4 sm:py-2">
+              className="rounded-lg border px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50 sm:px-4 sm:py-2">
               {busy ? "Analysing…" : "Re-analyse"}
             </button>
           </div>
         </div>
       )}
-    </section>
-  );
-}
-
-function AiSignalCard({ label, name, s }: { label: string; name: string; s: { action: "BUY" | "SELL" | "NEUTRAL"; confidence: number; reasoning: string; entry: number | null; stopLoss: number | null; takeProfit: number | null } }) {
-  const color = s.action === "BUY" ? "text-bull" : s.action === "SELL" ? "text-bear" : "text-muted-foreground";
-  return (
-    <div className="rounded-2xl border bg-card p-4 transition-colors sm:rounded-3xl sm:p-8">
-      <p className="font-mono text-xs tracking-widest text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{name}</p>
-      <div className="mt-4 flex items-baseline gap-3 sm:mt-6 sm:gap-4">
-        <p className={`text-3xl font-medium tracking-[-0.02em] sm:text-5xl ${color}`}>{s.action}</p>
-        <p className="font-mono text-lg text-muted-foreground sm:text-xl">{s.confidence}%</p>
-      </div>
-      <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:mt-4">{s.reasoning}</p>
     </div>
   );
 }
@@ -293,104 +278,11 @@ function fmt(n: number) {
   return Math.abs(n) >= 10 ? n.toFixed(0) : n.toFixed(2).replace(/0$/, "");
 }
 
-function Heading({ k, title, sub }: { k: string; title: string; sub: string }) {
+function Heading({ id, title, sub }: { id: string; title: string; sub: string }) {
   return (
-    <div className="mb-6 flex flex-col gap-2 sm:mb-8 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
-      <div>
-        <p className="font-mono text-xs text-muted-foreground">{k}</p>
-        <h2 className="mt-1 text-2xl font-medium tracking-[-0.02em] sm:mt-2 sm:text-4xl">{title}</h2>
-      </div>
+    <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+      <h2 id={id} className="text-2xl font-medium tracking-[-0.02em] sm:text-4xl">{title}</h2>
       <p className="max-w-xs text-sm text-muted-foreground sm:text-right">{sub}</p>
-    </div>
-  );
-}
-
-function SignalCard({ s, name }: { s: Signal; name: string }) {
-  const color = s.action === "BUY" ? "text-bull" : s.action === "SELL" ? "text-bear" : "text-muted-foreground";
-  const r = 54, c = 2 * Math.PI * r;
-  return (
-    <div className="group rounded-2xl border bg-card p-4 transition-colors sm:rounded-3xl sm:p-8">
-      <div className="flex items-start justify-between gap-3 sm:gap-4">
-        <div>
-          <p className="font-mono text-xs tracking-widest text-muted-foreground">XAUUSD</p>
-          <p className="mt-1 text-sm text-muted-foreground">{name}</p>
-          <p key={s.action} className={`mt-4 animate-blur-in text-4xl font-medium tracking-[-0.02em] sm:mt-8 sm:text-7xl ${color}`}>{s.action}</p>
-          <p className="mt-2 text-sm text-muted-foreground sm:mt-3">
-            {s.drivers ? `Based on ${s.drivers} red-news release${s.drivers === 1 ? "" : "s"} in the last 24h` : "No released red news in the last 24h"}
-          </p>
-        </div>
-        <div className="relative size-20 shrink-0 sm:size-36">
-          <svg viewBox="0 0 128 128" className="size-full -rotate-90">
-            <circle cx="64" cy="64" r={r} fill="none" stroke="var(--muted)" strokeWidth="8" />
-            <circle
-              cx="64" cy="64" r={r} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round"
-              className={`${color} transition-[stroke-dashoffset] duration-700`}
-              strokeDasharray={c} strokeDashoffset={c * (1 - s.confidence / 100)}
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-lg sm:text-3xl">{s.confidence}%</span>
-            <span className="text-[9px] text-muted-foreground sm:text-[10px]">confidence</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BiasChip({ e, asset }: { e: NewsEvent; asset: Asset }) {
-  if (e.forecast === null) return <span className="font-mono text-xs text-muted-foreground">—</span>;
-  if (e.actual === null) return <span className="font-mono text-xs text-muted-foreground">pending</span>;
-  const b = eventBias(e, asset);
-  return <span className={`font-mono text-xs ${toneText[b]}`}>{b === "bullish" ? "▲" : b === "bearish" ? "▼" : "■"} {b}</span>;
-}
-
-function NewsRow({ e, now, open, onToggle }: { e: NewsEvent; now: Date | null; open: boolean; onToggle: () => void }) {
-  const t = new Date(e.time);
-  const day = t.toLocaleDateString("en-GB", { weekday: "short", timeZone: "America/New_York" });
-  const time = t.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/New_York" });
-  const released = now ? t <= now : false;
-  return (
-    <div className={released ? "" : "opacity-90"}>
-      <button onClick={onToggle} className="grid w-full grid-cols-[56px_1fr] items-center gap-2 px-3 py-3 text-left transition-colors hover:bg-faint sm:grid-cols-[110px_1fr_150px_140px] sm:gap-4 sm:px-6 sm:py-5">
-        <span className="font-mono text-[11px] text-muted-foreground sm:text-sm">{day} {time}</span>
-        <span className="flex items-center gap-2">
-          <span className="size-2 shrink-0 rounded-sm bg-bear sm:size-2.5" />
-          <span className="text-sm font-medium sm:text-base">{e.title}</span>
-          <span className="hidden font-mono text-xs text-muted-foreground sm:inline">{e.currency}</span>
-        </span>
-        <span className="col-span-2 pl-3 font-mono text-xs sm:col-span-1 sm:pl-0 sm:text-sm">
-          {e.forecast === null ? <span className="text-muted-foreground">speech / no forecast</span> : (
-            <>
-              <span className={e.actual === null ? "text-muted-foreground" : ""}>{e.actual ?? "—"}{e.actual !== null && e.unit}</span>
-              <span className="text-muted-foreground"> / {e.forecast}{e.unit}</span>
-            </>
-          )}
-        </span>
-        <span className="col-span-2 pl-3 text-xs sm:col-span-1 sm:pl-0 sm:text-sm">Gold <BiasChip e={e} asset="XAUUSD" /></span>
-      </button>
-      {open && (
-        <div className="animate-blur-in space-y-3 px-3 pb-4 text-sm text-muted-foreground sm:px-6 sm:pb-6 sm:pl-[134px]">
-          <p>{e.note}{e.previous !== null && <span className="font-mono text-xs"> · previous {e.previous}{e.unit}</span>}</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function NextNews({ events, now }: { events: NewsEvent[]; now: Date | null }) {
-  if (!now) return null;
-  const next = events.find((e) => new Date(e.time) > now);
-  if (!next) return null;
-  const diff = new Date(next.time).getTime() - now.getTime();
-  const h = Math.floor(diff / 3600e3);
-  const m = Math.floor((diff % 3600e3) / 60e3);
-  const s = Math.floor((diff % 60e3) / 1000);
-  return (
-    <div className="mt-6 flex flex-wrap items-center gap-2 font-mono text-xs sm:mt-10 sm:gap-4 sm:text-sm">
-      <span className="text-muted-foreground">Next red news</span>
-      <span className="text-gold">{next.title}</span>
-      <span>{String(h).padStart(2, "0")}:{String(m).padStart(2, "0")}:{String(s).padStart(2, "0")}</span>
     </div>
   );
 }
