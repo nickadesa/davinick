@@ -169,7 +169,6 @@ function Index() {
           <p className="mt-4 max-w-md text-muted-foreground">Chart, fib levels, killzones and a lot-size calculator for XAUUSD</p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link to="/desk" className="rounded-lg bg-gold px-5 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">Open the desk</Link>
-            <Link to="/history" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Review past signals</Link>
           </div>
         </section>
 

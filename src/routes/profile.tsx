@@ -134,7 +134,7 @@ function Profile() {
           </div>
         )}
         <section aria-label="More" className="mt-12 divide-y rounded-2xl border">
-          {([["/", "Signals and news"], ["/calendar", "Calendar"], ["/history", "History"], ["/desk", "Desk"]] as const).map(([to, label]) => (
+          {([["/", "Signals and news"], ["/calendar", "Calendar"], ["/desk", "Desk"]] as const).map(([to, label]) => (
             <Link key={to} to={to} className="flex items-center justify-between px-4 py-4 text-sm transition-colors hover:bg-faint">
               {label}<ChevronRight className="size-4 text-muted-foreground" strokeWidth={1.5} />
             </Link>
