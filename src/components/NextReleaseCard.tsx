@@ -26,7 +26,7 @@ export function NextReleaseCard({ events, now }: { events: NewsEvent[]; now: Dat
   return (
     <div className="rounded-2xl border bg-card p-6 sm:p-8">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <span className={`size-2 rounded-full ${soon ? "animate-pulse-dot bg-gold" : "bg-muted-foreground/50"}`} aria-hidden />
+        <span className={`size-2 rounded-full ${soon ? "animate-pulse-dot bg-brand" : "bg-muted-foreground/50"}`} aria-hidden />
         Next release
       </div>
       <p className="mt-4 text-xl font-medium sm:text-2xl">{next?.title ?? "Loading calendar"}</p>
@@ -35,7 +35,7 @@ export function NextReleaseCard({ events, now }: { events: NewsEvent[]; now: Dat
         {pad(h)}:{pad(m)}:{pad(s)}
       </p>
       <div className="mt-6 h-1 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.round(fill)} aria-valuemin={0} aria-valuemax={100} aria-label="Time to release, last 24 hours">
-        <div className="h-full rounded-full bg-gold transition-[width] duration-1000 ease-linear" style={{ width: `${fill}%` }} />
+        <div className="h-full rounded-full bg-brand transition-[width] duration-1000 ease-linear" style={{ width: `${fill}%` }} />
       </div>
       <dl className="mt-6 grid grid-cols-2 gap-4 border-t pt-4 font-mono text-sm">
         <div>

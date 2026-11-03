@@ -103,7 +103,7 @@ function Profile() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border bg-background px-4 py-3 outline-none focus:border-gold"
+                className="w-full rounded-xl border bg-background px-4 py-3 outline-none focus:border-brand"
               />
               <input
                 type="password"
@@ -112,12 +112,12 @@ function Profile() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border bg-background px-4 py-3 outline-none focus:border-gold"
+                className="w-full rounded-xl border bg-background px-4 py-3 outline-none focus:border-brand"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-full bg-gold py-3 font-medium text-primary-foreground disabled:opacity-50"
+                className="w-full rounded-full bg-brand py-3 font-medium text-primary-foreground disabled:opacity-50"
               >
                 {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Sign up"}
               </button>

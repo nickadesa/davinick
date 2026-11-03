@@ -37,7 +37,7 @@ export function KillzoneRadar() {
           <p className="font-mono text-xs text-muted-foreground">Killzones · New York time</p>
           <p className="mt-2 flex items-center gap-3 text-xl font-medium sm:text-2xl">
             <span className="relative flex h-2 w-2">
-              <span className={`relative inline-flex h-2 w-2 rounded-full ${liveKill ? "bg-gold" : "bg-muted-foreground/40"}`} />
+              <span className={`relative inline-flex h-2 w-2 rounded-full ${liveKill ? "bg-brand" : "bg-muted-foreground/40"}`} />
             </span>
             {now === null ? "—" : liveKill ? `${liveKill.name} is live` : "Quiet hours"}
           </p>
@@ -54,7 +54,7 @@ export function KillzoneRadar() {
           const on = active.includes(z);
           return segs.map(([s, e], i) => (
             <div key={z.name + i} title={z.name}
-              className={`absolute top-1 bottom-1 rounded-md transition-opacity duration-300 ${z.kill ? "bg-gold" : "bg-foreground/15"} ${z.kill ? (on ? "opacity-100" : "opacity-30") : ""}`}
+              className={`absolute top-1 bottom-1 rounded-md transition-opacity duration-300 ${z.kill ? "bg-brand" : "bg-foreground/15"} ${z.kill ? (on ? "opacity-100" : "opacity-30") : ""}`}
               style={{ left: `${(s! / 1440) * 100}%`, width: `${((e! - s!) / 1440) * 100}%` }} />
           ));
         })}
@@ -71,7 +71,7 @@ export function KillzoneRadar() {
           const on = active.includes(z);
           return (
             <div key={z.name} className={`rounded-xl border p-4 transition-colors duration-300 ${on ? "bg-secondary" : ""}`}>
-              <p className={`text-sm font-medium ${on ? "text-gold" : ""}`}>{z.name}</p>
+              <p className={`text-sm font-medium ${on ? "text-brand" : ""}`}>{z.name}</p>
               <p className="mt-1 font-mono text-xs text-muted-foreground">{hhmm(z.start)}–{hhmm(z.end)}</p>
             </div>
           );
