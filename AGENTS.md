@@ -16,6 +16,7 @@
 - AI analysis lives in `src/lib/ai.server.ts` (Lovable AI Gateway, structured output), stored in the `ai_analysis` singleton row; it auto-regenerates 24h and 15min before the next red-news event (`aiRefreshPlan` in `signals.ts`) and the home page polls every minute — avoids AI calls on days without news.
 - The site is gold (XAUUSD) only; Nasdaq was removed at the user's request. Old NASDAQ rows in `signal_history` are filtered out, not deleted.
 - Desk chart is a hand-drawn SVG candlestick (no chart library) so it renders during SSR; fib/lot-size/PnL maths are pure functions in `signals.ts`.
-- All content pages share `SiteNav` with a Radix dropdown and pathname-based active links — the dropdown is the only navigation chrome, on desktop and mobile.
+- `AppShell` (mounted once in `__root.tsx`) is the only navigation chrome: collapsible left sidebar on desktop (state in localStorage), left drawer on mobile, top bar with notifications and profile — pages render content only.
+- Journal is guest-mode: trades live in localStorage (`src/lib/journal.ts`, pure maths tested in `journal.test.ts`) — no sign-in needed.
 - Shared UI pieces (`NextReleaseCard`, `SignalSummaryCard`, `NewsRow`/`NewsList`) live in `src/components` and are reused across Home and Calendar — one visual language per signal/news element.
-- Navigation is the top-right dropdown only: no bottom tab bar and no History page (both removed at the user's request); `signal_history` rows are still written so the data stays available.
+- No bottom tab bar; `/history` redirects to `/` (page removed at the user's request); `signal_history` rows are still written so the data stays available.
