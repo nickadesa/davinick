@@ -11,7 +11,6 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { BottomNav } from "@/components/BottomNav";
 
 function NotFoundComponent() {
   return (
@@ -119,10 +118,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="pb-16 sm:pb-0">
-        <Outlet />
-      </div>
-      <BottomNav />
+      <Outlet />
     </QueryClientProvider>
   );
 }
