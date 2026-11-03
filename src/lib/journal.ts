@@ -32,7 +32,7 @@ export function isoDay(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 function parseDay(s: string) {
-  const [y, m, d] = s.split("-").map(Number);
+  const [y = 0, m = 1, d = 1] = s.split("-").map(Number);
   return new Date(y, m - 1, d);
 }
 /** Monday-start week key */
@@ -76,7 +76,7 @@ export function groupBy(list: Trade[], key: (t: Trade) => string, order?: string
 
 export const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export function weekdayOf(date: string) {
-  return WEEKDAYS[(parseDay(date).getDay() + 6) % 7];
+  return WEEKDAYS[(parseDay(date).getDay() + 6) % 7]!;
 }
 
 /** Monthly grid: leading nulls so day 1 lands on its weekday (Mon start). */

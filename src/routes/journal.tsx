@@ -59,12 +59,12 @@ function JournalBody({ trades, today, onChange }: { trades: Trade[]; today: Date
   const [range, setRange] = useState<Range>("month");
   const [instrument, setInstrument] = useState("all");
   const [side, setSide] = useState<"all" | Side>("all");
-  const bounds = useMemo(() => {
+  const bounds = useMemo((): [number, number] => {
     const v = trades.map((t) => t.pnl);
     return v.length ? [Math.floor(Math.min(0, ...v)), Math.ceil(Math.max(0, ...v))] : [0, 0];
   }, [trades]);
   const [pnl, setPnl] = useState<number[] | null>(null);
-  const pr = pnl ?? bounds;
+  const pr: [number, number] = pnl ? [pnl[0] ?? bounds[0], pnl[1] ?? bounds[1]] : bounds;
   const instruments = [...new Set(trades.map((t) => t.instrument))].sort();
   const stats = summary(trades, today);
   const filtered = trades.filter((t) => inRange(t, range, today) && (instrument === "all" || t.instrument === instrument) && (side === "all" || t.side === side) && t.pnl >= pr[0] && t.pnl <= pr[1]);
@@ -223,7 +223,7 @@ function TradeList({ trades, onDelete }: { trades: Trade[]; onDelete: (id: strin
         <section key={d} className="rounded-2xl border bg-card">
           <header className="flex items-center justify-between border-b px-4 py-3 text-sm">
             <span>{new Date(d + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" })}</span>
-            <span className={cn("font-mono tabular-nums", tone(net[d]))}>{money(net[d])}</span>
+            <span className={cn("font-mono tabular-nums", tone(net[d] ?? 0))}>{money(net[d] ?? 0)}</span>
           </header>
           <ul className="divide-y">
             {trades.filter((t) => t.date === d).map((t) => (
