@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as DeskRouteImport } from './routes/desk'
 import { Route as HistoryRouteImport } from './routes/history'
+import { Route as JournalRouteImport } from './routes/journal'
 import { Route as ProfileRouteImport } from './routes/profile'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const HistoryRoute = HistoryRouteImport.update({
   path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JournalRoute = JournalRouteImport.update({
+  id: '/journal',
+  path: '/journal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/desk': typeof DeskRoute
   '/history': typeof HistoryRoute
+  '/journal': typeof JournalRoute
   '/profile': typeof ProfileRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof CalendarRoute
   '/desk': typeof DeskRoute
   '/history': typeof HistoryRoute
+  '/journal': typeof JournalRoute
   '/profile': typeof ProfileRoute
 }
 export interface FileRoutesById {
@@ -61,14 +69,22 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/desk': typeof DeskRoute
   '/history': typeof HistoryRoute
+  '/journal': typeof JournalRoute
   '/profile': typeof ProfileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/calendar' | '/desk' | '/history' | '/profile'
+  fullPaths: '/' | '/calendar' | '/desk' | '/history' | '/journal' | '/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/calendar' | '/desk' | '/history' | '/profile'
-  id: '__root__' | '/' | '/calendar' | '/desk' | '/history' | '/profile'
+  to: '/' | '/calendar' | '/desk' | '/history' | '/journal' | '/profile'
+  id:
+    | '__root__'
+    | '/'
+    | '/calendar'
+    | '/desk'
+    | '/history'
+    | '/journal'
+    | '/profile'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +92,7 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   DeskRoute: typeof DeskRoute
   HistoryRoute: typeof HistoryRoute
+  JournalRoute: typeof JournalRoute
   ProfileRoute: typeof ProfileRoute
 }
 
@@ -109,6 +126,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/journal': {
+      id: '/journal'
+      path: '/journal'
+      fullPath: '/journal'
+      preLoaderRoute: typeof JournalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -124,6 +148,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   DeskRoute: DeskRoute,
   HistoryRoute: HistoryRoute,
+  JournalRoute: JournalRoute,
   ProfileRoute: ProfileRoute,
 }
 export const routeTree = rootRouteImport
