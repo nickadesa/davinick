@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { getCalendar } from "@/lib/market.functions";
-import { SiteNav } from "@/components/SiteNav";
 import { NewsList } from "@/components/NewsRow";
 
 const calendarQuery = queryOptions({ queryKey: ["calendar"], queryFn: () => getCalendar(), staleTime: 60_000 });
@@ -29,7 +28,6 @@ function CalendarPage() {
   useEffect(() => setNow(new Date()), []);
   return (
     <div className="min-h-screen">
-      <SiteNav />
       <main className="mx-auto max-w-6xl px-5 pb-24 sm:px-10">
         <section className="animate-blur-in pt-12 pb-8 sm:pt-20">
           <h1 className="text-4xl font-medium tracking-[-0.02em] sm:text-6xl">This week's red news</h1>

@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ChevronRight, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
-import { SiteNav } from "@/components/SiteNav";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
@@ -65,7 +64,6 @@ function Profile() {
 
   return (
     <div className="min-h-screen">
-      <SiteNav />
       <main className="mx-auto max-w-lg px-5 py-12">
         {user ? (
           <div className="text-center">
@@ -134,7 +132,7 @@ function Profile() {
           </div>
         )}
         <section aria-label="More" className="mt-12 divide-y rounded-2xl border">
-          {([["/", "Signals and news"], ["/calendar", "Calendar"], ["/desk", "Desk"]] as const).map(([to, label]) => (
+          {([["/", "Signals and news"], ["/calendar", "Calendar"], ["/desk", "Desk"], ["/journal", "Journal"]] as const).map(([to, label]) => (
             <Link key={to} to={to} className="flex items-center justify-between px-4 py-4 text-sm transition-colors hover:bg-faint">
               {label}<ChevronRight className="size-4 text-muted-foreground" strokeWidth={1.5} />
             </Link>
