@@ -3,7 +3,6 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { getCandles } from "@/lib/market.functions";
 import type { Candle } from "@/lib/signals";
-import { SiteNav } from "@/components/SiteNav";
 import { KillzoneRadar } from "@/components/KillzoneRadar";
 
 type Timeframe = "1D" | "1W" | "1M" | "3M" | "1Y" | "ALL";
@@ -43,7 +42,6 @@ function Desk() {
 
   return (
     <div className="min-h-screen">
-      <SiteNav />
       <main className="mx-auto max-w-3xl px-5 pb-32 sm:px-8">
         <section className="pt-12 pb-6 sm:pt-16">
           <p className="font-mono text-sm text-muted-foreground">XAU/USD · Gold Spot</p>

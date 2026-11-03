@@ -4,7 +4,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { computeSignal, eventBias, type NewsEvent } from "@/lib/signals";
 import { getAiAnalysis, getCalendar } from "@/lib/market.functions";
-import { SiteNav } from "@/components/SiteNav";
 import { NewsList, toneText } from "@/components/NewsRow";
 import { NextReleaseCard } from "@/components/NextReleaseCard";
 import { SignalSummaryCard } from "@/components/SignalSummaryCard";
@@ -72,7 +71,6 @@ function Index() {
 
   return (
     <div className="min-h-screen">
-      <SiteNav />
 
       <main className="mx-auto max-w-6xl px-5 pb-8 sm:px-10">
         <section className="animate-blur-in grid grid-cols-1 items-center gap-10 pt-10 pb-16 sm:pt-20 sm:pb-24 lg:grid-cols-[1fr_1.1fr]">
