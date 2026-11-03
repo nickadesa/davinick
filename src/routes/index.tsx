@@ -84,7 +84,7 @@ function Index() {
               High-impact USD figures are scored against forecast and turned into a BUY, SELL or NEUTRAL call for XAUUSD, with an honest confidence
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link to="/desk" className="rounded-lg bg-gold px-5 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">Open the desk</Link>
+              <Link to="/desk" className="rounded-lg bg-brand px-5 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">Open the desk</Link>
               <Link to="/calendar" className="text-sm text-muted-foreground transition-colors hover:text-foreground">See this week's news</Link>
             </div>
           </div>
@@ -96,7 +96,7 @@ function Index() {
           <ol className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-3">
             {steps.map((s) => (
               <li key={s.n}>
-                <p className="font-mono text-sm text-gold">{s.n}</p>
+                <p className="font-mono text-sm text-brand">{s.n}</p>
                 <p className="mt-3 text-lg font-medium">{s.title}</p>
                 <p className="mt-2 text-sm text-muted-foreground">{s.body}</p>
               </li>
@@ -136,7 +136,7 @@ function Index() {
                     <span className="font-medium">{e.title}</span>
                     <span className="font-mono text-xl">{fmt(v)}{e.unit}</span>
                   </div>
-                  <input type="range" aria-label={`${e.title} what-if value`} className="mt-4 w-full accent-gold"
+                  <input type="range" aria-label={`${e.title} what-if value`} className="mt-4 w-full accent-brand"
                     min={fc - span} max={fc + span} step={span / 50} value={v}
                     onChange={(ev) => setWhat({ ...what, [e.id]: Number(ev.target.value) })} />
                   <div className="mt-2 flex justify-between font-mono text-xs text-muted-foreground">
@@ -168,7 +168,7 @@ function Index() {
           <h2 className="max-w-2xl text-3xl font-medium tracking-[-0.02em] sm:text-5xl">Plan the next release on the desk</h2>
           <p className="mt-4 max-w-md text-muted-foreground">Chart, fib levels, killzones and a lot-size calculator for XAUUSD</p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link to="/desk" className="rounded-lg bg-gold px-5 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">Open the desk</Link>
+            <Link to="/desk" className="rounded-lg bg-brand px-5 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">Open the desk</Link>
           </div>
         </section>
 
@@ -207,7 +207,7 @@ function AiSection() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="font-mono text-xs text-muted-foreground">Weekly outlook</p>
               {data.stage && (
-                <span className="font-mono text-xs text-gold">
+                <span className="font-mono text-xs text-brand">
                   {data.stage === "15m" ? "Final 15m call" : "24h outlook"}
                 </span>
               )}
