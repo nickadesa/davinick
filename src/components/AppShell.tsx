@@ -55,7 +55,7 @@ function CompactNext({ now }: { now: Date | null }) {
       </div>
       <p className="mt-2 line-clamp-1 text-sm">{next?.title ?? (now && events.length ? "None left this week" : "Loading")}</p>
       <p className="mt-1 font-mono text-lg tabular-nums">{next ? `${h}h ${String(m).padStart(2, "0")}m` : "—"}</p>
-      <Progress value={fill} className="mt-2 h-1" aria-label="Time to release, last 24 hours" />
+      <Progress value={fill} className="mt-2 h-1 [&>div]:bg-brand" aria-label="Time to release, last 24 hours" />
     </div>
   );
 }
