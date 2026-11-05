@@ -53,7 +53,7 @@ const faqs = [
   { q: "Is this financial advice", a: "No. Signals are educational analysis of economic news. Trading carries risk" },
 ];
 
-function Index() {
+export function Index() {
   const { data } = useSuspenseQuery(calendarQuery);
   const now = useNow();
   const [what, setWhat] = useState<Record<string, number>>({});

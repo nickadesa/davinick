@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as DeskRouteImport } from './routes/desk'
 import { Route as HistoryRouteImport } from './routes/history'
@@ -19,6 +20,11 @@ import { Route as ProfileRouteImport } from './routes/profile'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalysisRoute = AnalysisRouteImport.update({
+  id: '/analysis',
+  path: '/analysis',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CalendarRoute = CalendarRouteImport.update({
@@ -49,6 +55,7 @@ const ProfileRoute = ProfileRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analysis': typeof AnalysisRoute
   '/calendar': typeof CalendarRoute
   '/desk': typeof DeskRoute
   '/history': typeof HistoryRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analysis': typeof AnalysisRoute
   '/calendar': typeof CalendarRoute
   '/desk': typeof DeskRoute
   '/history': typeof HistoryRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analysis': typeof AnalysisRoute
   '/calendar': typeof CalendarRoute
   '/desk': typeof DeskRoute
   '/history': typeof HistoryRoute
@@ -74,12 +83,27 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/calendar' | '/desk' | '/history' | '/journal' | '/profile'
+  fullPaths:
+    | '/'
+    | '/analysis'
+    | '/calendar'
+    | '/desk'
+    | '/history'
+    | '/journal'
+    | '/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/calendar' | '/desk' | '/history' | '/journal' | '/profile'
+  to:
+    | '/'
+    | '/analysis'
+    | '/calendar'
+    | '/desk'
+    | '/history'
+    | '/journal'
+    | '/profile'
   id:
     | '__root__'
     | '/'
+    | '/analysis'
     | '/calendar'
     | '/desk'
     | '/history'
@@ -89,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalysisRoute: typeof AnalysisRoute
   CalendarRoute: typeof CalendarRoute
   DeskRoute: typeof DeskRoute
   HistoryRoute: typeof HistoryRoute
@@ -103,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analysis': {
+      id: '/analysis'
+      path: '/analysis'
+      fullPath: '/analysis'
+      preLoaderRoute: typeof AnalysisRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/calendar': {
@@ -145,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalysisRoute: AnalysisRoute,
   CalendarRoute: CalendarRoute,
   DeskRoute: DeskRoute,
   HistoryRoute: HistoryRoute,

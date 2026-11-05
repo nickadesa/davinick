@@ -20,3 +20,6 @@
 - Journal is guest-mode: trades live in localStorage (`src/lib/journal.ts`, pure maths tested in `journal.test.ts`) — no sign-in needed.
 - Shared UI pieces (`NextReleaseCard`, `SignalSummaryCard`, `NewsRow`/`NewsList`) live in `src/components` and are reused across Home and Calendar — one visual language per signal/news element.
 - No bottom tab bar; `/history` redirects to `/` (page removed at the user's request); `signal_history` rows are still written so the data stays available.
+- Official BoardUI source is isolated under `src/boardui`; use its controls with host semantic-token overrides and no template sample data, so provenance is retained without overwriting legacy controls. Pro blocks require licensed source, never lookalikes.
+- Keep strict TypeScript with the public BoardUI/Glisse-compatible optional-property and index-access settings; runtime validation still governs user data.
+- Optional Glisse surfaces are lazy-loaded behind ClientOnly, retaining the uploaded MIT license; browser refraction code never enters SSR evaluation.
