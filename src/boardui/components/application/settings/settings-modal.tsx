@@ -60,6 +60,8 @@ export interface SettingsModalProps {
   planArtSrc?: string;
   /** Optional marketplace pane, including its own fixed header and scroll region. */
   marketplace?: ReactNode;
+  /** TOPTIERclub supplies its own settings; never render template billing or plugin content. */
+  content?: ReactNode;
 }
 
 type IconComponent = ComponentType<{
@@ -119,6 +121,7 @@ export function SettingsModal({
   defaultPage = "general",
   planArtSrc,
   marketplace,
+  content,
 }: SettingsModalProps) {
   const direction = useDirection();
   const [page, setPage] = useState<SettingsPage>(defaultPage);
@@ -229,7 +232,7 @@ export function SettingsModal({
         )}
       >
         {/* Nav rail — the board-team dropdown group/item recipe */}
-        <nav
+        {!content && <nav
           aria-label="Settings sections"
           className="flex w-14 shrink-0 flex-col gap-5 overflow-y-auto border-e border-separator-border bg-background-secondary-default p-2.5 sm:w-48 lg:w-60"
         >
@@ -277,7 +280,7 @@ export function SettingsModal({
               </div>
             </div>
           ))}
-        </nav>
+        </nav>}
 
         {/* Content pane — fixed title row, scrollable page below */}
         <div className="flex min-w-0 flex-1 flex-col">
@@ -291,7 +294,7 @@ export function SettingsModal({
               page === "storage" ? "pb-1.5" : "pb-3",
             )}
           >
-            <h2 className="text-title-3-medium text-text-primary">{PAGE_TITLES[page]}</h2>
+            <h2 className="text-title-3-medium text-text-primary">{content ? "Settings" : PAGE_TITLES[page]}</h2>
             <button
               type="button"
               aria-label="Close settings"
@@ -311,7 +314,7 @@ export function SettingsModal({
               className="h-full overflow-y-auto px-8 pb-8"
               onScroll={(e) => setContentScrolled(e.currentTarget.scrollTop > 0)}
             >
-              {page === "profile" ? (
+              {content ?? (page === "profile" ? (
                 <SettingsProfile onSaved={showSavedToast} />
               ) : page === "storage" ? (
                 <SettingsStorage />
@@ -319,7 +322,7 @@ export function SettingsModal({
                 <SettingsTools />
               ) : (
                 <SettingsGeneral planArtSrc={planArtSrc} />
-              )}
+              ))}
             </div>
             {/* Progressive top fade — eases in once the page is scrolled so
                 content dissolves under the title row instead of hard-cutting. */}

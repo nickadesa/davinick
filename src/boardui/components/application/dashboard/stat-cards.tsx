@@ -57,6 +57,7 @@ export type Stat = {
   caption?: string;
   /** Footer variant: shows an info glyph with this text on hover. */
   hint?: string;
+  valueClassName?: string;
 };
 
 const DEFAULT_STATS: Stat[] = [
@@ -182,17 +183,14 @@ function StatHint({ label, hint }: { label: string; hint: string }) {
 function PlainStatCard({ stat }: { stat: Stat }) {
   const localize = useTemplateCopy();
   return localize((
-    <section className="flex h-[132px] min-w-0 flex-col items-start justify-between rounded-2xl bg-background-secondary-default p-4">
-      <span className="flex items-center rounded-md bg-stat-card-icon-background p-1.5">
-        <stat.icon className="size-5 shrink-0 text-foreground-icon-primary" aria-hidden />
-      </span>
+    <section className="flex min-h-28 min-w-0 flex-col items-start justify-center rounded-lg border bg-background-primary-default p-4">
       <div className="flex w-full flex-col gap-0.5">
         <p className="w-full text-body-medium text-text-secondary">{stat.label}</p>
         <div className="flex w-full flex-wrap items-center gap-2">
-          <p className="text-title-1-medium whitespace-nowrap text-text-primary">{stat.value}</p>
-          <Chip variant="bold" color={stat.deltaColor}>
+          <p className={cx("text-2xl tabular-nums break-words text-text-primary", stat.valueClassName)}>{stat.value}</p>
+          {stat.delta && <Chip variant="bold" color={stat.deltaColor}>
             {stat.delta}
-          </Chip>
+          </Chip>}
         </div>
       </div>
     </section>
