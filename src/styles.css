@@ -1,12 +1,13 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "./boardui/styles/globals.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-mono: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -75,6 +76,19 @@
   --bull: oklch(0.6 0.17 150);
   --bear: oklch(0.55 0.21 25);
   --faint: oklch(0 0 0 / 4%);
+  --color-accent-50: var(--sky-50);
+  --color-accent-100: var(--sky-100);
+  --color-accent-200: var(--sky-200);
+  --color-accent-300: var(--sky-300);
+  --color-accent-400: var(--sky-400);
+  --color-accent-500: var(--sky-500);
+  --color-accent-600: var(--sky-600);
+  --color-accent-700: var(--sky-700);
+  --color-accent-800: var(--sky-800);
+  --color-accent-900: var(--sky-900);
+  --color-accent-950: var(--sky-950);
+  --font-inter: "DM Sans";
+  --font-mono-source: "DM Sans";
 }
 
 .dark {
@@ -106,6 +120,8 @@
 @layer base {
   * { border-color: var(--color-border); }
   body {
+    letter-spacing: 0;
+    font-feature-settings: "zero" 0;
     font-variant-numeric: tabular-nums;
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -129,6 +145,36 @@
 @utility text-outline-giant {
   color: var(--faint);
   font-weight: 700;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   line-height: 0.85;
+}
+
+/* BoardUI semantic surfaces follow the site's theme, not template defaults. */
+:root, .dark {
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted-foreground);
+  --color-text-tertiary: var(--muted-foreground);
+  --color-background-primary-default: var(--card);
+  --color-background-secondary-default: var(--background);
+  --color-background-tertiary-default: var(--secondary);
+  --color-background-primary-hover: var(--secondary);
+  --color-background-secondary-hover: var(--secondary);
+  --color-background-tertiary-hover: var(--accent);
+  --color-foreground-icon-secondary: var(--muted-foreground);
+  --color-border-button-default: var(--border);
+  --color-border-button-hover: var(--input);
+  --color-border-focus-ring: var(--brand);
+  --color-button-ghost-background: transparent;
+  --color-button-ghost-foreground: var(--foreground);
+  --color-button-ghost-hover: var(--secondary);
+  --color-button-ghost-active: var(--accent);
+  --color-segmented-control-background: var(--secondary);
+  --color-segmented-control-selected-background: var(--card);
+  --color-notification-center-background: var(--background);
+}
+[class*="tracking-"] { letter-spacing: 0; }
+[data-density="compact"] main { --workspace-gap: 16px; }
+[data-text-size="large"] { font-size: 18px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
 }
