@@ -2,6 +2,7 @@
 @source "../src";
 @import "tw-animate-css";
 @import "./boardui/styles/globals.css";
+@import "./vendor/glisse/src/styles.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -175,6 +176,11 @@
 [class*="tracking-"] { letter-spacing: 0; }
 [data-density="compact"] main { --workspace-gap: 16px; }
 [data-text-size="large"] { font-size: 18px; }
+.workspace-glass { --lg-foreground: var(--foreground); --lg-glass: color-mix(in oklab, var(--background) 90%, transparent); --lg-edge: var(--border); }
+.glass-subtle { --lg-glass: color-mix(in oklab, var(--background) 94%, transparent); }
+.glass-balanced { --lg-glass: color-mix(in oklab, var(--background) 84%, transparent); }
+.glass-clear { --lg-glass: color-mix(in oklab, var(--background) 72%, transparent); }
+.workspace-glass header { background: transparent; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
 }
