@@ -26,6 +26,7 @@ import {
   RiSideBarFill,
   RiUserSmileLine,
 } from "@remixicon/react";
+import { Link } from "@tanstack/react-router";
 import { SettingsModal } from "@/boardui/components/application/settings/settings-modal";
 import { ThemeToggle } from "@/boardui/components/application/theme/theme-toggle";
 import { Badge } from "@/boardui/components/base/badges/badge";
@@ -78,7 +79,7 @@ function Collapsible({ collapsed, children, className }: { collapsed: boolean; c
   ));
 }
 
-function NavItem({
+export function NavItem({
   icon: Icon,
   label,
   badge,
@@ -98,8 +99,8 @@ function NavItem({
 }) {
   const localize = useTemplateCopy();
   return localize((
-    <a
-      href={href}
+    <Link
+      to={href as "/" | "/calendar" | "/desk" | "/journal" | "/profile" | "/analysis"}
       onClick={
         onClick
           ? (event) => {
@@ -116,20 +117,20 @@ function NavItem({
         "transition-[width,background-color] duration-300 ease-in-out",
         collapsed ? "w-9" : "w-full",
         isSelected
-          ? "bg-linear-to-b from-accent-500 to-accent-600 shadow-nav-selected"
+          ? "bg-background-tertiary-default"
           : "hover:bg-background-secondary-hover",
       )}
     >
       <span className="flex min-w-0 items-center gap-2">
         <Icon
-          className={cx("size-5 shrink-0", isSelected ? "text-white" : "text-foreground-icon-secondary")}
+          className={cx("size-5 shrink-0", isSelected ? "text-text-primary" : "text-foreground-icon-secondary")}
           aria-hidden
         />
         <Collapsible collapsed={collapsed}>
           <span
             className={cx(
               "text-body-medium whitespace-nowrap",
-              isSelected ? "text-white" : "text-text-secondary",
+              isSelected ? "text-text-primary" : "text-text-secondary",
             )}
           >
             {label}
@@ -137,7 +138,7 @@ function NavItem({
         </Collapsible>
       </span>
       {badge && <Collapsible collapsed={collapsed}>{badge}</Collapsible>}
-    </a>
+    </Link>
   ));
 }
 
