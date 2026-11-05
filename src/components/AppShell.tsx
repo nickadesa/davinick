@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
-import { Bell, BookOpen, CalendarDays, ChartCandlestick, Menu, Moon, Newspaper, PanelLeftClose, PanelLeftOpen, Settings, Sun, User } from "lucide-react";
+import { Bell, BookOpen, CalendarDays, ChartCandlestick, Menu, Moon, Newspaper, PanelLeftClose, PanelLeftOpen, Settings, Sun, User, Home, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,10 +11,17 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { useTheme } from "@/hooks/use-theme";
 import { getAiAnalysis, getCalendar } from "@/lib/market.functions";
+import { NavItem } from "@/boardui/components/application/dashboard/dashboard-sidebar";
+import { NotificationCenter } from "@/boardui/components/application/notification-center/notification-center";
+import { Drawer, DrawerHeader, DrawerBody } from "@/boardui/components/base/drawer/drawer";
+import { WorkspaceSettings } from "./WorkspaceSettings";
+import { GlassSurface } from "./GlassSurface";
+import { PreferencesContext, defaults, type Preferences } from "@/lib/preferences";
 import { cn } from "@/lib/utils";
 
 const pages = [
-  { to: "/", label: "Signals and news", icon: Newspaper },
+  { to: "/", label: "Home", icon: Home },
+  { to: "/analysis", label: "News analysis", icon: MessageSquare },
   { to: "/calendar", label: "Calendar", icon: CalendarDays },
   { to: "/desk", label: "Desk", icon: ChartCandlestick },
   { to: "/journal", label: "Journal", icon: BookOpen },
@@ -72,11 +79,7 @@ function SidebarBody({ collapsed, onNavigate, now }: { collapsed: boolean; onNav
         {pages.map(({ to, label, icon: Icon }) => {
           const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
           return (
-            <Link key={to} to={to} onClick={onNavigate} title={collapsed ? label : undefined} aria-current={active ? "page" : undefined}
-              className={cn("flex h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors hover:bg-faint", active ? "bg-secondary text-foreground" : "text-muted-foreground", collapsed && "justify-center px-0")}>
-              <Icon className="size-4 shrink-0" strokeWidth={1.5} />
-              {!collapsed && <span>{label}</span>}
-            </Link>
+            <NavItem key={to} href={to} label={label} icon={Icon} collapsed={collapsed} isSelected={active} onClick={onNavigate} />
           );
         })}
       </nav>
@@ -94,15 +97,17 @@ function SidebarBody({ collapsed, onNavigate, now }: { collapsed: boolean; onNav
 
 function Notifications({ now }: { now: Date | null }) {
   const { events, generatedAt } = useShellData();
+  const [center, setCenter] = useState(false);
   const [seen, setSeen] = useState<string | null>(null);
   useEffect(() => setSeen(localStorage.getItem(SEEN_KEY)), []);
   const soon = now ? events.filter((e) => { const d = new Date(e.time).getTime() - now.getTime(); return d > 0 && d <= 3600e3; }) : [];
   const items = [
-    ...soon.map((e) => ({ key: e.id ?? e.time + e.title, title: `${e.title} in ${Math.max(1, Math.round((new Date(e.time).getTime() - now!.getTime()) / 60e3))} min`, body: "High-impact USD release", at: e.time })),
+    ...soon.map((e) => ({ key: e.id ?? e.time + e.title, title: `${e.title} in ${Math.max(1, Math.round((new Date(e.time).getTime() - (now?.getTime() ?? 0)) / 60e3))} min`, body: "High-impact USD release", at: e.time })),
     ...(generatedAt ? [{ key: "ai-" + generatedAt, title: "New AI desk analysis", body: new Date(generatedAt).toLocaleString("en-GB", { timeZone: "America/New_York", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) + " New York", at: generatedAt }] : []),
   ];
   const unread = items.filter((i) => !seen || new Date(i.at).getTime() > new Date(seen).getTime() || i.key.startsWith("ai-") === false).length;
   return (
+    <>
     <Popover onOpenChange={(o) => { if (!o) { const v = new Date().toISOString(); localStorage.setItem(SEEN_KEY, v); setSeen(v); } }}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={`Notifications${unread ? `, ${unread} new` : ""}`} className="relative">
@@ -124,8 +129,11 @@ function Notifications({ now }: { now: Date | null }) {
             ))}
           </ul>
         )}
+        <Button variant="ghost" className="w-full border-t" onClick={() => setCenter(true)}>View all notifications</Button>
       </PopoverContent>
     </Popover>
+    <Drawer isOpen={center} onOpenChange={setCenter} size="lg"><DrawerHeader title="Notification center" /><DrawerBody><NotificationCenter notifications={items.map((i) => ({ id: i.key, category: "system", group: "Market", title: i.title, description: i.body, timestamp: new Date(i.at).toLocaleDateString("en-GB"), unread: !seen || new Date(i.at) > new Date(seen), actions: [{ id: "read", label: "Mark read" }] }))} /></DrawerBody></Drawer>
+    </>
   );
 }
 
@@ -136,29 +144,22 @@ function ProfileMenu() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Profile"><User strokeWidth={1.5} /></Button>
+          <Button variant="ghost" size="icon" aria-label="Profile" className="rounded-full border bg-secondary"><User strokeWidth={1.5} /></Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           <DropdownMenuItem asChild><Link to="/profile"><User className="mr-2 size-4" />Profile</Link></DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setOpen(true)}><Settings className="mr-2 size-4" />Settings</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Settings</DialogTitle>
-            <DialogDescription>Saved in this browser.</DialogDescription>
-          </DialogHeader>
-          <label className="flex items-center justify-between rounded-lg border px-4 py-3 text-sm">
-            Dark mode <Switch checked={dark} onCheckedChange={toggle} />
-          </label>
-        </DialogContent>
-      </Dialog>
+      <WorkspaceSettings open={open} onClose={() => setOpen(false)} />
     </>
   );
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const [preferences, setPreferences] = useState<Preferences>(defaults);
+  useEffect(() => { try { const saved = localStorage.getItem("toptier-preferences"); if (saved) setPreferences({ ...defaults, ...JSON.parse(saved) }); } catch {} }, []);
+  const updatePreferences = (patch: Partial<Preferences>) => setPreferences((current) => { const next = { ...current, ...patch }; localStorage.setItem("toptier-preferences", JSON.stringify(next)); return next; });
   const [collapsed, setCollapsed] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const now = useNow();
@@ -167,7 +168,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     setCollapsed((c) => { localStorage.setItem(COLLAPSE_KEY, c ? "0" : "1"); return !c; });
   }
   return (
-    <div className="min-h-screen">
+    <PreferencesContext.Provider value={{ preferences, update: updatePreferences }}><div className="min-h-screen" data-density={preferences.density} data-text-size={preferences.textSize}>
       <aside className={cn("fixed inset-y-0 left-0 z-30 hidden border-r bg-background transition-[width] duration-200 md:block", collapsed ? "w-[60px]" : "w-[260px]")}>
         <SidebarBody collapsed={collapsed} now={now} />
       </aside>
@@ -178,7 +179,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </SheetContent>
       </Sheet>
       <div className={cn("transition-[padding] duration-200", collapsed ? "md:pl-[60px]" : "md:pl-[260px]")}>
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-background px-3 sm:px-6">
+        <GlassSurface><header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-background px-3 sm:px-6">
           <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu" onClick={() => setDrawer(true)}><Menu strokeWidth={1.5} /></Button>
           <Button variant="ghost" size="icon" className="hidden md:inline-flex" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={toggleCollapse}>
             {collapsed ? <PanelLeftOpen strokeWidth={1.5} /> : <PanelLeftClose strokeWidth={1.5} />}
@@ -188,9 +189,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Notifications now={now} />
             <ProfileMenu />
           </div>
-        </header>
+        </header></GlassSurface>
         {children}
       </div>
-    </div>
+    </div></PreferencesContext.Provider>
   );
 }
