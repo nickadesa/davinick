@@ -52,8 +52,8 @@ import { DashboardUserMenu } from "./dashboard-user-menu";
  */
 
 type IconComponent = ComponentType<{
-  className?: string;
-  "aria-hidden"?: boolean | "true" | "false";
+  className?: string | undefined;
+  "aria-hidden"?: boolean | "true" | "false" | undefined;
 }>;
 
 /**
@@ -198,7 +198,7 @@ function NavRows({
           key={item.key}
           icon={item.icon}
           label={item.label}
-          href={item.href}
+          href={item.href ?? "#"}
           isSelected={isSelected}
           collapsed={collapsed}
           badge={
