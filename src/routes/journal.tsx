@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { WEEKDAYS, dailyNet, groupBy, inRange, isoDay, loadTrades, monthGrid, saveTrades, summary, weekdayOf, type Range, type Side, type Trade } from "@/lib/journal";
+import { ShareDayButton } from "@/components/ShareDayButton";
 
 export const Route = createFileRoute("/journal")({
   head: () => ({
@@ -171,6 +172,7 @@ function PnlCalendar({ trades, today }: { trades: Trade[]; today: Date }) {
   const net = dailyNet(trades);
   const cells = monthGrid(ym.y, ym.m);
   const shift = (d: number) => { const x = new Date(ym.y, ym.m + d, 1); setYm({ y: x.getFullYear(), m: x.getMonth() }); };
+  const countByDay = trades.reduce((acc, t) => { acc[t.date] = (acc[t.date] ?? 0) + 1; return acc; }, {} as Record<string, number>);
   return (
     <div className="rounded-2xl border bg-card p-4 sm:p-6">
       <div className="flex items-center justify-between">
@@ -183,9 +185,14 @@ function PnlCalendar({ trades, today }: { trades: Trade[]; today: Date }) {
       <div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground">{WEEKDAYS.map((d) => <div key={d} className="py-1">{d}</div>)}</div>
       <div className="grid grid-cols-7 gap-1">
         {cells.map((d, i) => d === null ? <div key={i} /> : (
-          <div key={d} className={cn("flex aspect-square flex-col justify-between rounded-lg border p-1.5 sm:aspect-[4/3] sm:p-2", d === isoDay(today) && "border-brand")}>
+          <div key={d} className={cn("relative flex aspect-square flex-col justify-between rounded-lg border p-1.5 sm:aspect-[4/3] sm:p-2", d === isoDay(today) && "border-brand")}>
             <span className="text-[10px] text-muted-foreground sm:text-xs">{Number(d.slice(8))}</span>
-            {net[d] !== undefined && <span className={cn("truncate font-mono text-[10px] tabular-nums sm:text-sm", tone(net[d]))}>{money(net[d])}</span>}
+            {net[d] !== undefined && (
+              <div className="flex items-end justify-between">
+                <span className={cn("truncate font-mono text-[10px] tabular-nums sm:text-sm", tone(net[d]))}>{money(net[d])}</span>
+                <ShareDayButton date={d} pnl={net[d]} tradeCount={countByDay[d] ?? 0} />
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -217,13 +224,17 @@ function TradeList({ trades, onDelete }: { trades: Trade[]; onDelete: (id: strin
   if (!trades.length) return <div className="rounded-2xl border bg-card p-8 text-sm text-muted-foreground">No trades in this view yet. Add one above</div>;
   const days = [...new Set(trades.map((t) => t.date))].sort().reverse();
   const net = dailyNet(trades);
+  const countByDay = trades.reduce((acc, t) => { acc[t.date] = (acc[t.date] ?? 0) + 1; return acc; }, {} as Record<string, number>);
   return (
     <div className="space-y-4">
       {days.map((d) => (
         <section key={d} className="rounded-2xl border bg-card">
           <header className="flex items-center justify-between border-b px-4 py-3 text-sm">
             <span>{new Date(d + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" })}</span>
-            <span className={cn("font-mono tabular-nums", tone(net[d] ?? 0))}>{money(net[d] ?? 0)}</span>
+            <div className="flex items-center gap-2">
+              <span className={cn("font-mono tabular-nums", tone(net[d] ?? 0))}>{money(net[d] ?? 0)}</span>
+              <ShareDayButton date={d} pnl={net[d] ?? 0} tradeCount={countByDay[d] ?? 0} />
+            </div>
           </header>
           <ul className="divide-y">
             {trades.filter((t) => t.date === d).map((t) => (
