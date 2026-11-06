@@ -1,13 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
-import { Bell, BookOpen, CalendarDays, ChartCandlestick, Menu, Moon, Newspaper, PanelLeftClose, PanelLeftOpen, Settings, Sun, User, Home, MessageSquare } from "lucide-react";
+import { Bell, BookOpen, CalendarDays, ChevronDown, Menu, Moon, PanelLeftClose, PanelLeftOpen, Settings, Sun, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { useTheme } from "@/hooks/use-theme";
 import { getAiAnalysis, getCalendar } from "@/lib/market.functions";
@@ -18,17 +16,22 @@ import { WorkspaceSettings } from "./WorkspaceSettings";
 import { GlassSurface } from "./GlassSurface";
 import { PreferencesContext, defaults, type Preferences } from "@/lib/preferences";
 import { cn } from "@/lib/utils";
+import { TopTierLogo } from "./TopTierLogo";
 
-const pages = [
+const mainPages = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/analysis", label: "News analysis", icon: MessageSquare },
   { to: "/calendar", label: "Calendar", icon: CalendarDays },
-  { to: "/desk", label: "Desk", icon: ChartCandlestick },
-  { to: "/journal", label: "Journal", icon: BookOpen },
 ] as const;
+
+// Placeholder journals — will be replaced with real data later
+const demoJournals = [
+  { id: "j1", name: "Main Account", type: "connected" as const, platform: "Tradovate" },
+  { id: "j2", name: "Manual Journal", type: "manual" as const },
+];
 
 const COLLAPSE_KEY = "toptier-sidebar-collapsed";
 const SEEN_KEY = "toptier-notif-seen";
+const JOURNALS_OPEN_KEY = "toptier-journals-open";
 
 function useNow() {
   const [now, setNow] = useState<Date | null>(null);
@@ -67,26 +70,106 @@ function CompactNext({ now }: { now: Date | null }) {
   );
 }
 
+function JournalsSection({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
+  const [open, setOpen] = useState(true);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(JOURNALS_OPEN_KEY);
+      if (saved !== null) setOpen(saved === "1");
+    } catch {}
+  }, []);
+
+  function toggle() {
+    setOpen((o) => {
+      const next = !o;
+      localStorage.setItem(JOURNALS_OPEN_KEY, next ? "1" : "0");
+      return next;
+    });
+  }
+
+  if (collapsed) {
+    return (
+      <NavItem
+        href="/journal"
+        label="Journals"
+        icon={BookOpen}
+        collapsed
+        isSelected={pathname.startsWith("/journal")}
+        onClick={onNavigate}
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col">
+      <button
+        type="button"
+        onClick={toggle}
+        className="flex h-10 items-center gap-2 rounded-lg px-3 text-sm text-muted-foreground transition-colors hover:bg-faint"
+        aria-expanded={open}
+      >
+        <BookOpen className="size-4 shrink-0" strokeWidth={1.5} />
+        <span className="flex-1 text-left">Journals</span>
+        <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="ml-4 mt-1 flex flex-col gap-0.5 border-l pl-2">
+          {demoJournals.map((j) => (
+            <Link
+              key={j.id}
+              to="/journal"
+              onClick={onNavigate}
+              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-faint"
+            >
+              <span className="flex size-5 items-center justify-center rounded bg-muted text-[10px] font-medium">
+                {j.type === "connected" ? j.platform?.[0] ?? "C" : "M"}
+              </span>
+              <span className="truncate">{j.name}</span>
+            </Link>
+          ))}
+          <Link to="/journal" onClick={onNavigate} className="px-2 py-1.5 text-xs text-muted-foreground hover:underline">
+            + Add journal
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SidebarBody({ collapsed, onNavigate, now }: { collapsed: boolean; onNavigate?: () => void; now: Date | null }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { dark, toggle } = useTheme();
+
   return (
     <div className="flex h-full flex-col gap-4 p-3">
-      <Link to="/" onClick={onNavigate} aria-label="TOPTIERclub home" className={cn("flex h-10 items-center px-2 text-lg font-medium", collapsed && "justify-center px-0")}>
-        {collapsed ? "T" : <>TOPTIER<span className="font-normal text-muted-foreground">club</span></>}
+      <Link to="/" onClick={onNavigate} aria-label="TOPTIERclub home" className={cn("flex h-10 items-center", collapsed && "justify-center")}>
+        {collapsed ? (
+          <span className="text-lg font-semibold">T</span>
+        ) : (
+          <TopTierLogo className="h-6 w-auto text-foreground" />
+        )}
       </Link>
+
       <nav aria-label="Main navigation" className="flex flex-col gap-1">
-        {pages.map(({ to, label, icon: Icon }) => {
+        {mainPages.map(({ to, label, icon: Icon }) => {
           const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
           return (
             <NavItem key={to} href={to} label={label} icon={Icon} collapsed={collapsed} isSelected={active} onClick={onNavigate} />
           );
         })}
+        <JournalsSection collapsed={collapsed} onNavigate={onNavigate} />
       </nav>
+
       <div className="mt-auto flex flex-col gap-3">
         {!collapsed && <CompactNext now={now} />}
         {!collapsed && <p className="px-1 text-xs leading-relaxed text-muted-foreground">Educational only, not financial advice.</p>}
-        <button onClick={toggle} title={dark ? "Light mode" : "Dark mode"} className={cn("flex h-10 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground transition-colors hover:bg-faint", collapsed && "justify-center px-0")}>
+        <button
+          onClick={toggle}
+          title={dark ? "Light mode" : "Dark mode"}
+          className={cn("flex h-10 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground transition-colors hover:bg-faint", collapsed && "justify-center px-0")}
+        >
           {dark ? <Sun className="size-4" strokeWidth={1.5} /> : <Moon className="size-4" strokeWidth={1.5} />}
           {!collapsed && (dark ? "Light mode" : "Dark mode")}
         </button>
@@ -105,50 +188,60 @@ function Notifications({ now }: { now: Date | null }) {
     ...soon.map((e) => ({ key: e.id ?? e.time + e.title, title: `${e.title} in ${Math.max(1, Math.round((new Date(e.time).getTime() - (now?.getTime() ?? 0)) / 60e3))} min`, body: "High-impact USD release", at: e.time })),
     ...(generatedAt ? [{ key: "ai-" + generatedAt, title: "New AI desk analysis", body: new Date(generatedAt).toLocaleString("en-GB", { timeZone: "America/New_York", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) + " New York", at: generatedAt }] : []),
   ];
-  const unread = items.filter((i) => !seen || new Date(i.at).getTime() > new Date(seen).getTime() || i.key.startsWith("ai-") === false).length;
+  const unread = items.filter((i) => !seen || new Date(i.at).getTime() > new Date(seen).getTime()).length;
   return (
     <>
-    <Popover onOpenChange={(o) => { if (!o) { const v = new Date().toISOString(); localStorage.setItem(SEEN_KEY, v); setSeen(v); } }}>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={`Notifications${unread ? `, ${unread} new` : ""}`} className="relative">
-          <Bell strokeWidth={1.5} />
-          {unread > 0 && <span className="absolute top-2 right-2 size-2 rounded-full bg-brand" aria-hidden />}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
-        <p className="border-b px-4 py-3 text-sm font-medium">Notifications</p>
-        {items.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-muted-foreground">Nothing new. Red news due within 60 minutes and new AI analysis show here</p>
-        ) : (
-          <ul className="divide-y">
-            {items.map((i) => (
-              <li key={i.key} className="px-4 py-3">
-                <p className="text-sm">{i.title}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{i.body}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-        <Button variant="ghost" className="w-full border-t" onClick={() => setCenter(true)}>View all notifications</Button>
-      </PopoverContent>
-    </Popover>
-    <Drawer isOpen={center} onOpenChange={setCenter} size="lg"><DrawerHeader title="Notification center" /><DrawerBody><NotificationCenter notifications={items.map((i) => ({ id: i.key, category: "system", group: "Market", title: i.title, description: i.body, timestamp: new Date(i.at).toLocaleDateString("en-GB"), unread: !seen || new Date(i.at) > new Date(seen), actions: [{ id: "read", label: "Mark read" }] }))} /></DrawerBody></Drawer>
+      <Popover onOpenChange={(o) => { if (!o) { const v = new Date().toISOString(); localStorage.setItem(SEEN_KEY, v); setSeen(v); } }}>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" size="icon" aria-label={`Notifications${unread ? `, ${unread} new` : ""}`} className="relative">
+            <Bell strokeWidth={1.5} />
+            {unread > 0 && <span className="absolute top-2 right-2 size-2 rounded-full bg-brand" aria-hidden />}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-80 p-0">
+          <p className="border-b px-4 py-3 text-sm font-medium">Notifications</p>
+          {items.length === 0 ? (
+            <p className="px-4 py-6 text-sm text-muted-foreground">Nothing new. Red news due within 60 minutes and new AI analysis show here</p>
+          ) : (
+            <ul className="divide-y">
+              {items.map((i) => (
+                <li key={i.key} className="px-4 py-3">
+                  <p className="text-sm">{i.title}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{i.body}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Button variant="ghost" className="w-full border-t" onClick={() => setCenter(true)}>View all notifications</Button>
+        </PopoverContent>
+      </Popover>
+      <Drawer isOpen={center} onOpenChange={setCenter} size="lg">
+        <DrawerHeader title="Notification center" />
+        <DrawerBody>
+          <NotificationCenter notifications={items.map((i) => ({ id: i.key, category: "system", group: "Market", title: i.title, description: i.body, timestamp: new Date(i.at).toLocaleDateString("en-GB"), unread: !seen || new Date(i.at) > new Date(seen), actions: [{ id: "read", label: "Mark read" }] }))} />
+        </DrawerBody>
+      </Drawer>
     </>
   );
 }
 
 function ProfileMenu() {
   const [open, setOpen] = useState(false);
-  const { dark, toggle } = useTheme();
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Profile" className="rounded-full border bg-secondary"><User strokeWidth={1.5} /></Button>
+          <Button variant="ghost" size="icon" aria-label="Profile" className="rounded-full border bg-secondary">
+            <User strokeWidth={1.5} />
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem asChild><Link to="/profile"><User className="mr-2 size-4" />Profile</Link></DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => setOpen(true)}><Settings className="mr-2 size-4" />Settings</DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/profile"><User className="mr-2 size-4" />Profile</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => setOpen(true)}>
+            <Settings className="mr-2 size-4" />Settings
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <WorkspaceSettings open={open} onClose={() => setOpen(false)} />
@@ -168,30 +261,38 @@ export function AppShell({ children }: { children: ReactNode }) {
     setCollapsed((c) => { localStorage.setItem(COLLAPSE_KEY, c ? "0" : "1"); return !c; });
   }
   return (
-    <PreferencesContext.Provider value={{ preferences, update: updatePreferences }}><div className="min-h-screen" data-density={preferences.density} data-text-size={preferences.textSize}>
-      <aside className={cn("fixed inset-y-0 left-0 z-30 hidden border-r bg-background transition-[width] duration-200 md:block", collapsed ? "w-[60px]" : "w-[260px]")}>
-        <SidebarBody collapsed={collapsed} now={now} />
-      </aside>
-      <Sheet open={drawer} onOpenChange={setDrawer}>
-        <SheetContent side="left" className="w-[280px] p-0">
-          <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <SidebarBody collapsed={false} now={now} onNavigate={() => setDrawer(false)} />
-        </SheetContent>
-      </Sheet>
-      <div className={cn("transition-[padding] duration-200", collapsed ? "md:pl-[60px]" : "md:pl-[260px]")}>
-        <GlassSurface><header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-background px-3 sm:px-6">
-          <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu" onClick={() => setDrawer(true)}><Menu strokeWidth={1.5} /></Button>
-          <Button variant="ghost" size="icon" className="hidden md:inline-flex" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={toggleCollapse}>
-            {collapsed ? <PanelLeftOpen strokeWidth={1.5} /> : <PanelLeftClose strokeWidth={1.5} />}
-          </Button>
-          <Link to="/" className="text-base font-medium md:hidden">TOPTIER<span className="font-normal text-muted-foreground">club</span></Link>
-          <div className="ml-auto flex items-center gap-1">
-            <Notifications now={now} />
-            <ProfileMenu />
-          </div>
-        </header></GlassSurface>
-        {children}
+    <PreferencesContext.Provider value={{ preferences, update: updatePreferences }}>
+      <div className="min-h-screen" data-density={preferences.density} data-text-size={preferences.textSize}>
+        <aside className={cn("fixed inset-y-0 left-0 z-30 hidden border-r bg-background transition-[width] duration-200 md:block", collapsed ? "w-[60px]" : "w-[260px]")}>
+          <SidebarBody collapsed={collapsed} now={now} />
+        </aside>
+        <Sheet open={drawer} onOpenChange={setDrawer}>
+          <SheetContent side="left" className="w-[280px] p-0">
+            <SheetTitle className="sr-only">Navigation</SheetTitle>
+            <SidebarBody collapsed={false} now={now} onNavigate={() => setDrawer(false)} />
+          </SheetContent>
+        </Sheet>
+        <div className={cn("transition-[padding] duration-200", collapsed ? "md:pl-[60px]" : "md:pl-[260px]")}>
+          <GlassSurface>
+            <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-background px-3 sm:px-6">
+              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu" onClick={() => setDrawer(true)}>
+                <Menu strokeWidth={1.5} />
+              </Button>
+              <Button variant="ghost" size="icon" className="hidden md:inline-flex" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={toggleCollapse}>
+                {collapsed ? <PanelLeftOpen strokeWidth={1.5} /> : <PanelLeftClose strokeWidth={1.5} />}
+              </Button>
+              <Link to="/" className="md:hidden">
+                <TopTierLogo className="h-5 w-auto text-foreground" />
+              </Link>
+              <div className="ml-auto flex items-center gap-1">
+                <Notifications now={now} />
+                <ProfileMenu />
+              </div>
+            </header>
+          </GlassSurface>
+          {children}
+        </div>
       </div>
-    </div></PreferencesContext.Provider>
+    </PreferencesContext.Provider>
   );
 }
